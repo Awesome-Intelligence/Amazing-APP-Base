@@ -64,6 +64,12 @@
   顺带修掉「clone 没带 `--recurse-submodules`」时子模块目录显示成已删除的误报。
 - **`install-kit.sh` 的悬空引用**：该脚本在迁移时已删，`skills/README.md` / `rules/SUBMODULES.md`
   里还写着它 —— 改成按 fork 模式说明怎么拷 skill。
+- **`ci.yml` 里多出来的一道 `base-guard` job**（迁移时误加）：和 `.github/workflows/base-guard.yml`
+  重复，且有两个问题 —— 上游自己改底座的 PR 会在它上面误报红；更要命的是它用 `pull_request` 触发、
+  checkout 的是 PR 的代码，fork 改一下 `check-base-unchanged.sh` 就把自己放过去了（正是
+  `base-guard.yml` 用 `pull_request_target` 要避开的洞）。删掉，底座保护只留 `base-guard.yml` 一处。
+- **`.github/actions/setup-gradle` 删除**：KMP 时代的 composite action（8 个 Gradle job 共用），
+  迁移后没有任何 workflow 引用它 —— Flutter 用 `subosito/flutter-action`，不需要它。
 
 ### KMP 版历史（迁移前，已废弃）
 

@@ -165,6 +165,10 @@ final skill = SkillDefinition(
 
 **门禁逻辑不在 workflow 里** —— 全在 `scripts/ci.sh`，CI 和本地跑的是同一份脚本。
 
+底座保护门禁（`base-guard`）是个例外：它跑在 `scripts/check-base-unchanged.sh`，
+但**触发它的 workflow 单独放**（`.github/workflows/base-guard.yml`，用 `pull_request_target`）——
+fork 提 PR 时 workflow 永远取 base 分支的版本，PR 改不动它，也就绕不过去。
+
 | 闸门 | 干什么 |
 |---|---|
 | `analyze` | 零 issue 才算过（`deprecated_member_use` 也算） |
@@ -175,7 +179,7 @@ final skill = SkillDefinition(
 | `verify_gateway.py` | 网关事件名与字段，TS 端和 Dart 端得对得上 |
 | `no-hardcoded-secrets.sh` | 仓库里出现 key 直接失败 |
 | `backend` | `npm run check` + `npm run smoke`（网关能编译、skill 能加载、契约能校验） |
-| `base-guard` | 改动碰到 `` 等底座路径就失败 |
+| `base-guard` | 改动碰到 `kit/` / `rules/` / `scripts/` 等底座路径就失败（fork 专用，上游自己的 PR 不拦） |
 
 ## skill 没有编译期保障
 

@@ -119,18 +119,8 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  base-guard:
-    name: Base guard (底座不许改)
-    runs-on: ubuntu-latest
-    # 只在 PR 上跑：push 到 main 说明底座改动已经合了，再拦没意义。
-    # pull_request_target 让 workflow 永远取 base 分支的版本，PR 改不动它。
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Check protected paths
-        env:
-          BASE_REF: origin/${{ github.base_ref }}
-        run: bash scripts/check-base-unchanged.sh --base "$BASE_REF"
+# 底座保护（fork 不许改底座）**不在这里**：
+# 它在 .github/workflows/base-guard.yml，用 pull_request_target 触发 ——
+# workflow 永远取 base 分支的版本，fork 改不动它。
+# 这里再写一份会有两个问题：上游自己改底座的 PR 会误报红；
+# 而且 pull_request 跑的是 PR 的代码，fork 改一下检查脚本就能把自己放过去。

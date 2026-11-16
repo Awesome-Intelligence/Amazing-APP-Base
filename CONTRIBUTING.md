@@ -26,7 +26,7 @@
 **这条规矩是机器强制的**，不是嘴上说说：
 
 - 上游有 `.github/workflows/base-guard.yml` —— 用 `pull_request_target` 触发，workflow 永远取 **base 分支**的版本，fork 改不动它（改了就等于把检查删了）。PR 碰了上面任一路径 → 这道门禁直接红，PR 合并不进来。
-- fork 本地自查：`bash scripts/ci.sh base-guard`（默认比对 `upstream` 远端的默认分支）。`bash scripts/ci.sh all` 已经包含它 —— 提交前跑一遍，改了底座当场就知道。
+- fork 本地自查：`bash scripts/ci.sh base-guard`（默认比对 `upstream` 远端的默认分支）。提交前跑一遍，改了底座当场就知道。**它不在 `ci.sh all` 里** —— 上游自己改底座是正常的，塞进 `all` 会天天误报。
 
 例外只有两个：
 
