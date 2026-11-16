@@ -1,27 +1,129 @@
-# Android 构建产物
+# ────────────────────────────────────────────────────────────────
+# 0. 先读这两条，能少踩一半的坑：
+#
+#   a) 不带斜杠的条目（build/ .dart_tool/ node_modules/ …）在 git 里匹配**任意层级**。
+#      所以 kit/build/ apps/demo/build/ 一条盖全，不需要逐个模块列。
+#
+#   b) `!` 只能豁免「同目录或子目录里」的条目，父目录被忽略了就豁免不了。
+#      所以 .env.example 要和 .env 放在一起写。
+# ────────────────────────────────────────────────────────────────
+
+
+# ══════════════════════════════════════════════════════════════
+# 1. Dart / Flutter 构建产物
+# ══════════════════════════════════════════════════════════════
+.dart_tool/
 build/
-.gradle/
-local.properties
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.packages
+.pub-cache/
+.pub/
+
+# pub workspace 只有根目录的 lock 要进版本库；成员包的 lock 是派生物
+apps/*/pubspec.lock
+chat-demo/pubspec.lock
+
+# 本地平台配置（每台机器自己生成）
+android/local.properties
+android/.gradle/
+android/app/debug/
+android/app/profile/
+android/app/release/
+ios/Flutter/ephemeral/
+ios/Pods/
+ios/.symlinks/
+macos/Flutter/ephemeral/
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+
 *.apk
 *.aab
+*.ipa
 *.keystore
 !debug.keystore
+*.hprof
 
-# IDE
+# 桌面打包产物
+*.dmg
+*.deb
+*.msi
+
+
+# ══════════════════════════════════════════════════════════════
+# 2. iOS / Xcode
+#    平台壳目录里的 .gitignore 管了常规产物，这里补「换台机器会重新出现」的那部分
+# ══════════════════════════════════════════════════════════════
+xcuserdata/
+DerivedData/
+*.xcarchive
+*.xcuserstate
+*.dSYM.zip
+
+
+# ══════════════════════════════════════════════════════════════
+# 3. Node / TypeScript —— agent 网关（backend/）
+# ══════════════════════════════════════════════════════════════
+node_modules/
+*.tsbuildinfo
+
+# 密钥：.env 进版本库等于泄密。.env.example 是模板，必须豁免。
+.env
+!.env.example
+
+
+# ══════════════════════════════════════════════════════════════
+# 4. Python —— scripts/ 和 skills/*/scripts/ 下的工具
+# ══════════════════════════════════════════════════════════════
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+
+# ══════════════════════════════════════════════════════════════
+# 5. IDE
+# ══════════════════════════════════════════════════════════════
 .idea/
-*.iml
+.vscode/
+.fleet/
+
+
+# ══════════════════════════════════════════════════════════════
+# 6. 编辑器 / 系统垃圾
+# ══════════════════════════════════════════════════════════════
 .DS_Store
+Thumbs.db
+desktop.ini
+*~
+*.swp
+*.swo
+*.orig
+*.rej
+*.tmp
 
-# Kotlin
-.kotlin/
 
-# agent 网关（backend/）
-backend/node_modules/
-backend/.env
+# ══════════════════════════════════════════════════════════════
+# 7. 本地工具的私有数据
+# ══════════════════════════════════════════════════════════════
+
+# WorkBuddy 本地数据（项目级技能镜像、会话缓存等）—— 不进仓库
+.workbuddy/
+
+# CodeGraph 索引（本机生成的符号图，换机器会重建）
+.codegraph/
+
 
 # ────────────────────────────────────────────────────────────────
-# 注意：这里**不**忽略 .claude/ / .agents/ / rules/ / skills/
-# 原项目用 `.claude/*` + `!.claude/scripts/` 的写法，
-# 结果 GOOGLE_STYLE.md 和所有 skill 一直是未跟踪状态 —— 换台机器就没了。
-# 规则和 skill 是 kit 的核心内容，必须进版本库。
+# 8. 故意**不**忽略的东西 —— 改之前先想清楚
+#
+#    .claude/  .agents/  rules/  skills/  .github/  根 pubspec.lock
+#
+#    规则和 skill 是底座的核心内容，必须进版本库；
+#    根 pubspec.lock 固定整个 workspace 的依赖版本，是本仓库的行为契约。
 # ────────────────────────────────────────────────────────────────

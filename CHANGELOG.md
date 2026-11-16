@@ -5,7 +5,75 @@
 
 ## [未发布]
 
+### 变更（破坏性）
+- **底座全量从 Kotlin/Compose Multiplatform 迁移到 Flutter/Dart（2026-11-16）**。旧实现备份在仓库外
+  `E:/Awesome Intelligence/kmp-legacy-backup/`，不再演进。目录映射：
+  `kit/`（原 KMP `:kit`）、`kit-agent/`（原 `:kit-agent-koog`）、`kit-membership/`、`chat-demo/`、`apps/demo/`。
+  包管理器从 Gradle multi-module 换成 **pub workspace**（根 `pubspec.yaml` 一次 `flutter pub get` 解析全部包）。
+- **agent 运行时从 Koog 换成 `dart_agent_core`**（Koog 是 Kotlin 原生，没有 Dart 版）。契约保持不变：
+  `AgentRuntime` / `AgentSession` / `SkillDefinition` / `SkillTool` / `AgentEvent` / `ToolApprover` / `ChatLog` /
+  `SkillContract` / `SkillSamples`。审批闸门改接 `AgentHook.beforeToolCall`，
+  语义仍是「执行前拦截、拒绝理由作为工具结果回给模型」。
+- **主题从「每种风格一组组件」改成 token 驱动**：一套组件 + 5 套 `ThemeTokens`（Mono / Swiss / Notion / EInk / macOS）。
+  风格专属组件集（原 `SwissComponents` / `NotionComponents` / `EInkComponents` / `MacOSComponents`，约 1200 行）
+  不再搬 —— 架构上已被 tokens 取代。
+- **门禁换套**：detekt / apiCheck / gradle test → `analyze` / `test` / `contract` / `verify` / `base-guard`，
+  全部收在 `scripts/ci.sh`。`verify-kit.py` / `verify-i18n.py` / `verify-skills.py` / `merge_strings.py` /
+  `install-kit.sh` / `new_app.py` 删除（Kotlin/Compose 专用）。新增 `verify_contract.py` / `verify_layers.py` /
+  `checks/no-hardcoded-secrets.sh`。
+- **平台覆盖扩到四端**：Android / iOS / Desktop / **Web**（原 KMP 版明确不做 Web）。
+
 ### 新增
+- **`chat-demo/` 换成 Flutter 桌面应用**：`--fake` 走本地假运行时（不联网、不花钱、不需要 key）。
+- **`kit-agent` 补 `FakeAgentRuntime` + `AllowAllApprover`**：KMP 版有、迁移时漏掉的。
+- **`kit/data/update` 完整迁移**：`AppVersion`（semver，含 `1.10.0 > 1.9.0`、`1.2.3-beta < 1.2.3`）/
+  `UpdateChecker`（节流 → 拉清单 → 比版本，失败也记时间）/ `HttpUpdateSource` / `GitHubReleaseSource` /
+  `UpdateDialog`（强制更新不可关闭）+ demo 的 `UpdateGate`。
+- **跨端契约闭环**：`apps/demo/contract/actions.json` + Dart 动作表 + 小程序端动作表，两端跑同一批黄金样例；
+  `runAsyncActionSamples` 适配 async 业务层。
+- **会员框架 + 付费墙 UI**：`kit-membership` 纯逻辑（档位表 / 额度 / 落盘 / 验签），UI 在 `kit/lib/src/ui/membership/`
+  （`MembershipPaywall` / `QuotaPaywall` / `UpgradeSheet`）。
+- **i18n**：`KitStrings`（中文 / English 两个 const 子类）+ `KitStringsScope`，运行时切换，
+  Material 内置控件文案跟着切（`flutter_localizations`）。
+- **`FLUTTER_MIGRATION.md`**（新）：KMP → Flutter 迁移清单 —— 迁了什么、**没迁什么**（9 组业务组件、
+  4 套风格专属组件、平台相关组件），以及「想搬一个组件回来要做什么」。
+- **`scripts/verify_gateway.py`**（新）：跨语言比对网关协议 —— 抓 `backend/src/agent.ts` 的事件名与字段，
+  跟 Dart 端的映射表对齐，不一致直接失败（跑在 `ci.sh verify`）。
+- **`ci.sh backend` 子命令**（新）：`npm run check`（类型检查）+ `npm run smoke`（冒烟），
+  挂进 `ci.sh all` 和 CI 的 `Backend (gateway)` job。
+- **`kit/lib/src/ui/agent/chat_message_mapper.dart`**（新）：运行态消息 → 展示态消息的**唯一**映射。
+  之前 `chat-demo` 和 `apps/demo` 各写一份 `_uiMessages()`，早晚会分叉。
+
+### 修复
+- **网关事件映射对不上**：后端发 `start` / `text` / `tool` / `result{output}`，
+  而 Dart 端认的是 `tool_use` / `tool_done` / `tool_failed` / `result{text}` —— 工具调用和
+  结束标记在链路上直接丢了。后端改成发 kit 的 `AgentEvent` 词表（`result` 同时带 `text` 和
+  `output`），Dart 端补齐映射；`kit-agent/test/gateway_protocol_test.dart` 用假 SSE 钉住每种事件。
+- **`sessionId` 取不到**：续接用的 sessionId 之前从 `result` 里读，而后端从来不发 ——
+  现在由 `start` 事件带，Dart 端改从 `start` 取，续接才真正生效。
+- **根 `pubspec.yaml` 的 workspace 成员**：从逐个列包改成 `apps/*` 通配，新 app 不用改根 pubspec
+  （新 app 的 pubspec 必须写 `resolution: workspace`）；`chat-demo` 移出「底座」名单。
+- **`verify_contract.py` 不写死文件名**：动作表改成按约定找（`lib/**/*actions*.dart` /
+  `miniprogram/logic/**/*actions*.js`），app 换文件名不用改这个脚本。
+- **`verify_layers.py` 漏了 `export`**：只看 `import` 的话，`export 'package:app/...'` 能绕过分层检查。
+- **KMP 残留清理**：`kit-membership/api/desktop/kit-membership.api`、`kit-membership/build.gradle.kts`
+  删除；`rules/COMPONENT_SPEC.md` 里的 Kotlin 代码示例换成 Flutter 实现的真签名。
+- **子模块门禁丢了**：文档写着 `ci.sh` 有一道 `submodules` 门禁，脚本里其实没有 —— 补回
+  `scripts/checks/submodules.sh`（`verify` 会跑），CI 的 `verify` job checkout 带 `submodules: true`。
+- **base-guard 没豁免子模块路径**：文档说挪子模块指针不算「改底座」，脚本里没这条 —— 补上；
+  顺带修掉「clone 没带 `--recurse-submodules`」时子模块目录显示成已删除的误报。
+- **`install-kit.sh` 的悬空引用**：该脚本在迁移时已删，`skills/README.md` / `rules/SUBMODULES.md`
+  里还写着它 —— 改成按 fork 模式说明怎么拷 skill。
+
+### KMP 版历史（迁移前，已废弃）
+
+- **底座多语言：简体中文 / English，支持应用内切换**：`AppSettings.language`（`System` 跟随系统 / `Chinese` / `English`，落盘持久化）；根组合包 `ProvideKitLanguage(language, applier)` 一次下发「平台 locale（决定 `stringResource` 取哪套表）」和「`LocalKitLanguage`（决定日期 / 相对时间文案格式）」；kit 自带三端实现 `AndroidLocaleApplier` / `DesktopLocaleApplier` / `IosLocaleApplier`，想换策略（如 Android 走 `AppCompatDelegate.setApplicationLocales`）自己实现 `KitLocaleApplier` 接口传进来即可。非中非英的系统语言落中文（与 `values/` 是中文的兜底一致）
+- **`skills/` 的上游镜像改成 git submodule**：`skills/android-skills/`（→ [android/skills](https://github.com/android/skills)）和 `skills/logo-design-skill/`（→ [kaankiziltug/logo-design-skill](https://github.com/kaankiziltug/logo-design-skill)，MIT）不再把文件抄进仓库，而是挂成子模块 —— 上游更新由 Dependabot（`package-ecosystem: submodules`）每周自动开 PR 挪指针，本仓库也不用背 14MB / 1400+ 个 SVG 参考库
+- **`rules/SUBMODULES.md`**（新）：子模块的完整说明 —— clone 必须带 `--recurse-submodules`、`git pull` 后要再 `git submodule update --init --recursive`、别在子模块目录里改文件、怎么固定版本、Dependabot 的 PR 为什么不会被 base-guard 拦
+- **`scripts/ci.sh` 的 `submodules` 门禁**（`verify` / `all` 会跑）：子模块目录是空的就直接失败并提示 `git submodule update --init --recursive`。子模块没初始化时目录是空的，而 `cp -r` 空目录**不报错** —— 装出去的项目 skill 全没了，CI 也不会红，这道门禁就是防这个
+- **底座保护门禁豁免子模块路径**：`scripts/check-base-unchanged.sh` 里挪子模块指针不再算「改底座」（否则 Dependabot 每周的 PR 都会被拦死）；但 `.gitmodules` 本身（url / branch）仍在受保护清单里
+- **`skills/android-skills/` 从「过期的手抄镜像」升级成上游完整版**：之前手抄了 350 个文件，且上游新增的分类（glance / litert / wear-widgets / projected-hardware / android-permissions-security 等）都没跟上有；另外有 2 个文件被本仓库 `.gitignore` 的 `build/` 规则误伤没入库。现在是上游完整镜像（v1.0.21，36 个 skill / 451 个文件）。注意上游在 2026-10-26 删掉了 `jetpack-compose/theming/styles`（Styles API），本地不再有这份 —— 仓库里提到它的说法已更正，主题/动效以 `rules/GOOGLE_STYLE.md` 和 `rules/COMPONENT_SPEC.md` 为准
+- **`scripts/install-kit.sh` 装 skills 的方式改成显式映射**：第三方 skill 在上游仓库里的位置不统一（`logo-design-skill` 的 skill 在仓库的 `skills/logo-design/` 下，不是仓库根），且子模块目录里的 `.git` 指针文件不能拷进目标项目（会变成嵌套仓库）。装之前源目录不存在或为空 → 脚本直接报错停下，不再默默装个空的
 - **底座保护门禁（fork 不许改底座）**：`scripts/check-base-unchanged.sh` 列出底座路径（`kit/`、`kit-agent-koog/`、`rules/`、`.github/workflows/ci.yml`、`settings.gradle.kts`…），改动碰到就失败；`.github/workflows/base-guard.yml` 用 `pull_request_target` 在 PR 上强制它 —— workflow 永远取 base 分支的版本，fork 改不动，PR 碰底座路径直接红，合并不进来。fork 本地 `bash scripts/ci.sh base-guard`（`ci.sh all` 已包含）提前自查
 - **kit 新主题 Notion（文档风格）**：`ThemeStyle.Notion` + `notionThemeTokens(isDark)` —— 米色纸面 `#f7f6f3` + 墨色 `#37352f` + 1px 发丝线 `#e9e7e4`，圆角一律 4px、零渐变零重阴影、150ms ease-out 只变色。规范来自 StyleKit `notion-style`
 - **kit `ui/theme/ColorNotion.kt` / `TypeNotion.kt` / `MotionNotion.kt`**：规范只给了浅色，深色版是自建的语义反转（墨底 + 纸字）；悬停灰 `#efedea` / 按下灰 `#e3e1db` 分别落在 `surfaceVariant` / `surfaceContainerHighest` 两个槽位上
@@ -61,6 +129,7 @@
 - **apps/demo 桌面长按菜单**（Android App Shortcuts）：静态声明「新建待办 / 问助手 / 设置」，装完即可用；点开直接落到对应页面（新建待办预填草稿并弹键盘）；`singleTop` 复用同一实例，热启动走 `onNewIntent`；上报使用情况参与桌面排序。`shortcuts.xml` 与 `AppShortcut` 枚举的漂移由单元测试拦住
 
 ### 变更
+- **删掉 `skills/openclaw-skills-material-design/`**：这份 M3 对照 skill **代码里零引用**，文档里只当「参考、冲突时以 `rules/GOOGLE_STYLE.md` 为准」；内容与仓库自己的规范重复且冲突（它写按钮 40px/20dp、Dialog 28dp，仓库是 48dp/12dp、16dp），上游仓库也已 404 不会再更新。M3 规范的真正出处不变：`ui/theme/Motion.kt` 的 `M3Motion`（M3 官方站 m3.material.io）+ `rules/GOOGLE_STYLE.md` + `rules/COMPONENT_SPEC.md` §11
 - **位图（Bitmap）主题整块移除**（**破坏性**，fork 要改）：`ThemeStyle.Bitmap` 枚举值和 `bitmapThemeTokens()` 删除；`ColorBitmap.kt` / `TypeBitmap.kt` / `PixelMotion.kt`、六个像素组件（`DotMatrixNumber` / `DotMatrixBarChart` / `PixelDissolve` / `PixelProgressBar` / `Modifier.pixelDitherHover()` / `TypewriterText`）和 7.3MB 的 fusion-pixel 像素字体一并删掉。形状 token 化保留，Swiss / Notion / E-Ink / macOS 主题不受影响 —— 选过位图风格的 App 改回 Mono 即可
 - **工具返回值从 `String` 改成 `ToolOutput`**（**破坏性**，fork 要改）：`doExecute` 现在返回 `ToolOutput.Text(...)`；想要带图就用 `ToolOutput.TextWithImage(text, ToolImage(...))`
 - **`ToolApprover.approve` 从 `Boolean` 改成 `ToolApproval`**（**破坏性**，fork 要改）：`ToolApproval.Allow` / `AllowAlways` / `Deny`；原来写 `{ _, _ -> true }` 的改成 `{ _, _ -> ToolApproval.Allow }`

@@ -1,6 +1,6 @@
 # agent-gateway
 
-> **2026-11-02 起：agent loop 已移到手机端**（app = 前端 + skill + Koog 运行时，见根目录 `ARCHITECTURE.md`）。
+> **2026-11-02 起：agent loop 已移到手机端**（app = 前端 + skill + `dart_agent_core` 运行时，见根目录 `ARCHITECTURE.md`）。
 > 本目录降级为**可选**：skill 需要服务端能力（shell、重计算、集中管控）时才部署；
 > 或只当 key 转发代理用（客户端 `baseUrl` 直指本服务，本地 loop + 代理出网）。
 
@@ -16,8 +16,9 @@ npm run smoke          # 不花钱的检查：skill 加载 + 契约校验 + SSE 
 npm run dev            # http://localhost:8787
 ```
 
-> CI：`.github/workflows/ci.yml` 里的 `Backend (gateway)` job 每次 push 跑 `npm ci` → `npm run check`
-> → `npm run smoke` → 起一次真服务器打 `/health` 和 `/v1/skills`。
+> CI：`.github/workflows/ci.yml` 里的 `Backend (gateway)` job 每次 push 跑 `npm ci`
+> → `bash scripts/ci.sh backend`（= `npm run check` 类型检查 + `npm run smoke` 冒烟）。
+> 冒烟不花钱、不连网：skill 能加载、契约能校验、SSE 断连能 abort、鉴权/限流/session 归属都对。
 > 消费方项目没装 backend/ 时这条 job 自动跳过。
 
 ```bash
@@ -37,7 +38,11 @@ curl -N -X POST http://localhost:8787/v1/skills/summarize/invoke \
 | `POST /v1/skills/:id/invoke` | body `{input, sessionId?}` → SSE 事件流 |
 
 SSE 事件（`event:` 与 data JSON 里的 `type` 一致）：
-`start{sessionId}` → `text{text}` / `tool{name}` … → `result{output}`（已按契约校验）| `error{message}`。
+`start{sessionId}` → `text{text}` / `tool_use{name,args}` → `tool_done{name,result}` /
+`tool_failed{name,message}` → `result{text,output}`（`output` 已按契约校验）| `error{message}`。
+
+事件名跟 `kit-agent` 的 `AgentEvent` 一一对应 —— 两边对不上会直接失败：
+`scripts/verify_gateway.py` 跨语言比对 `src/agent.ts` 与 Dart 端的映射表（跑在 `ci.sh verify`）。
 
 ## 写一个新 skill
 

@@ -1,0 +1,20 @@
+<view class="page">
+  <view class="row">
+    <input
+      class="input"
+      value="{{draft}}"
+      placeholder="{{placeholder}}"
+      confirm-type="done"
+      bindinput="onDraft"
+      bindconfirm="onAdd"
+    />
+    <button class="primary" bindtap="onAdd">{{addText}}</button>
+  </view>
+
+  <view wx:if="{{!todos.length}}" class="empty">{{emptyText}}</view>
+
+  <view wx:for="{{todos}}" wx:key="id" class="todo">
+    <text class="title">{{item.id}}. {{item.title}}</text>
+    <button class="ghost" size="mini" data-id="{{item.id}}" bindtap="onRemove">{{removeText}}</button>
+  </view>
+</view>

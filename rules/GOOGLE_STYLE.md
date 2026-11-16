@@ -6,7 +6,7 @@
 
 ## 排版 (Typography)
 
-使用 M3 Type Scale，具体值见 `ui/theme/Type.kt`：
+使用 M3 Type Scale，具体值见 `kit/lib/src/theme/typography_tokens.dart`：
 
 | 角色 | 字号 | 字重 | 用途 |
 |------|------|------|------|
@@ -248,7 +248,7 @@
 
 ## 动效 (Animations)
 
-所有动效一律走 `ui/theme/Motion.kt` 的 `M3Motion` 令牌（时长 / Easing / Spring 全在里面），不要在页面里手写 tween/spring 参数。下表只列选型：
+所有动效一律走 `kit/lib/src/theme/motion.dart` 的 `M3Motion` 令牌（时长 / Easing / Curve 全在里面），不要在页面里手写 tween/spring 参数。下表只列选型：
 
 | 场景 | 用什么 |
 |------|--------|
@@ -259,7 +259,7 @@
 | 出现 / 消失 | `M3Motion.appear()` / `disappear()` |
 | 内容整体替换（无关联） | `M3Motion.fadeThrough()` |
 | **整页替换**（设置页、一级页面） | `AnimatedContent(transitionSpec = { M3Motion.fadeThrough() })` |
-| **层级推进 / 返回**（列表 → 详情） | `ui/navigation/NavTransitions.kt` 的 `sharedAxisIn/Out/PopIn/PopOut(offsetPx)`，位移量取 `M3Motion.SHARED_AXIS_OFFSET`（30dp，不是整屏） |
+| **层级推进 / 返回**（列表 → 详情） | `PageRouteBuilder` + `AnimatedSwitcher`，位移量取 `M3Motion` 的 shared-axis 偏移（30dp，不是整屏） |
 | **接 navigation 库时** | NavHost 级用 `sharedAxis*` 做层级推进，同层级目的地用 `fadeThroughIn/Out()` 覆盖 |
 | 列表条目换位 / 删除 | `Modifier.animateItem(fadeInSpec = null, placementSpec = M3Motion.itemPlacement(), fadeOutSpec = M3Motion.fastEffects())` |
 | Pager 程序化翻页（点页签） | `M3Motion.pagerScroll()`（只用于相邻页，跨多页直接 `scrollToPage`） |

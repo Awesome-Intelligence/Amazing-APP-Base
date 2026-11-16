@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "actions": [
+    { "action": "list_todos", "input": {}, "expect": "（还没有待办）" },
+    { "action": "add_todo", "input": { "title": "买牛奶" }, "expect": "已添加：买牛奶" },
+    { "action": "delete_todo", "input": { "id": "t999" }, "expect": "没找到要删的待办" }
+  ]
+}

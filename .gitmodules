@@ -1,0 +1,8 @@
+[submodule "skills/android-skills"]
+	path = skills/android-skills
+	url = https://github.com/android/skills.git
+	branch = main
+[submodule "skills/logo-design-skill"]
+	path = skills/logo-design-skill
+	url = https://github.com/kaankiziltug/logo-design-skill.git
+	branch = main

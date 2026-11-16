@@ -11,15 +11,13 @@
 <!-- 跑过什么命令 / 看过哪个页面。没验证就说没验证，别含糊 -->
 
 ```bash
-./gradlew :kit:desktopTest :kit-agent-koog:desktopTest
-./gradlew :kit:detekt :kit-agent-koog:detekt
-python scripts/verify-kit.py
+bash scripts/ci.sh all
 ```
 
 ## 检查项
 
-- [ ] 没改底座文件（`kit/`、`kit-agent-koog/`、`rules/`、`backend/`、`.github/workflows/`）—— fork 模式下这会让上游更新冲突
+- [ ] 没改底座文件（`kit/`、`kit-agent/`、`kit-membership/`、`chat-demo/`、`rules/`、`backend/`、`.github/`）—— fork 模式下这会让上游更新冲突
 - [ ] 没把 API key、token 写进代码或日志
-- [ ] 新增的用户可见文案走了 compose-resources（`Res.string.x`），并且 `values/` 和 `values-en/` 都补了
+- [ ] 新增的用户可见文案走了 `KitStrings`，并且 `_ZhStrings` 和 `_EnStrings` 都补了
 - [ ] 新增的工具遵守「逻辑 api 化」：tool 里没有业务分支，UI 按钮和 agent 调同一个函数
 - [ ] 危险操作走 `ToolApprover` 闸门，闸门在工具**执行前**拦

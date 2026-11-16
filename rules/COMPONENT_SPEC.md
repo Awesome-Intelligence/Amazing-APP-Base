@@ -1,8 +1,8 @@
 # Android-Kit - Android 公共组件规范
 
-> 版本：1.1.0
-> 日期：2026-10-23
-> 适用范围：Android 版（Kotlin + Jetpack Compose），单模块 `:app`
+> 版本：1.2.0
+> 日期：2026-11-16
+> 适用范围：Flutter 版（Dart + Widget），底座 `kit/` + 各 app
 
 ---
 
@@ -20,7 +20,7 @@
 | `corner_radius_editor` | 6dp | 文本输入区 |
 | `corner_radius_large` | 20dp | 大卡片、浮层 |
 
-> Token 名对应 `res/values/dimens.xml` 里的 `dimen` 资源名。
+> Token 数值与 `kit/lib/src/theme/` 下的 tokens 一致；dp 直接当逻辑像素用。
 
 ### 1.2 间距 (4pt Grid)
 
@@ -42,16 +42,14 @@
 | `elevated_elevation` | 悬浮元素 |
 | `dragging_elevation` | 拖拽时 |
 
-```xml
-<!-- res/values/elevation.xml -->
-<dimen name="card_elevation">2dp</dimen>
-<dimen name="elevated_elevation">6dp</dimen>
-<dimen name="dragging_elevation">8dp</dimen>
+```dart
+// Flutter 没有 res/values —— 阴影直接用 Material 的 elevation 数值：
+// 卡片 2 / 悬浮 6 / 拖拽 8；需要按主题变化就用 kit 的 token（kit/lib/src/theme/kit_shapes.dart）。
 ```
 
 ### 1.4 字体
 
-使用 Material 3 Typography（`ui/theme/Type.kt`）：
+使用 Material 3 Typography（`kit/lib/src/theme/typography_tokens.dart`）：
 
 | Style | 字号 / 行高 | 用途 |
 |-------|-------------|------|
@@ -131,26 +129,15 @@
 - Pressed：Primary @ 80% 亮度
 - Disabled：Primary @ 38% 亮度
 
-```kotlin
-@Composable
-fun PrimaryButton(
-    text: String,
-    onClick: () -> Unit,
-    enabled: Boolean = true
-) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier.height(48.dp),
-        shape = RoundedCorner(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
-        )
-    ) {
-        Text(text, style = MaterialTheme.typography.labelLarge)
-    }
-}
+```dart
+// kit/lib/src/ui/components/buttons.dart
+  const PrimaryButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.enabled = true,
+    this.expand = false,
+  });
 ```
 
 ### 3.2 次要按钮 (SecondaryButton)
@@ -168,22 +155,16 @@ fun PrimaryButton(
 - 边框：1dp，Primary
 - 文字：Primary，14sp Medium
 
-```kotlin
-@Composable
-fun SecondaryButton(
-    text: String,
-    onClick: () -> Unit,
-    enabled: Boolean = true
-) {
-    OutlinedButton(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier.height(48.dp),
-        shape = RoundedCorner(12.dp)
-    ) {
-        Text(text, style = MaterialTheme.typography.labelLarge)
-    }
-}
+```dart
+// kit/lib/src/ui/components/buttons.dart
+  const SecondaryButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.enabled = true,
+    this.icon,
+    this.expand = false,
+  });
 ```
 
 ### 3.3 图标按钮 (IconButton)
@@ -200,20 +181,15 @@ fun SecondaryButton(
 - 图标：24dp
 - TouchTarget：48dp × 48dp
 
-```kotlin
-@Composable
-fun AppIconButton(
-    icon: @Composable () -> Unit,
-    onClick: () -> Unit,
-    contentDescription: String
-) {
-    IconButton(
-        onClick = onClick,
-        modifier = Modifier.size(48.dp)
-    ) {
-        icon()
-    }
-}
+```dart
+// kit/lib/src/ui/components/buttons.dart
+  const FilledIconButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.tooltip,
+    this.enabled = true,
+  });
 ```
 
 ### 3.4 图标按钮 (ScaleIconButton)
@@ -221,46 +197,11 @@ fun AppIconButton(
 圆形图标按钮，**按下反馈用 M3 state layer**（onSurface 10% 圆角底），
 不做缩放 —— M3 没有 "press scale" 这一条，按下反馈走 state layer。
 
-```kotlin
-@Composable
-fun ScaleIconButton(
-    icon: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    // effects spring：无过冲，只改颜色
-    val stateLayer by animateColorAsState(
-        targetValue = if (isPressed && enabled) {
-            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f)
-        } else {
-            Color.Transparent
-        },
-        animationSpec = M3Motion.defaultEffects(),
-        label = "stateLayer"
-    )
-
-    Box(
-        modifier = modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(stateLayer)
-            .clickable(
-                interactionSource = interactionSource,
-                enabled = enabled,
-                onClick = onClick
-            )
-            .semantics { this.contentDescription = contentDescription },
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp))
-    }
-}
-```
+> **未迁到 Flutter**：ScaleIconButton（带缩放动效的图标按钮）
+>
+> KMP 备份在仓库外 `kmp-legacy-backup/`，本仓库不维护。
+> 真的要这个组件，从备份里挑实现搬进 `kit/lib/src/ui/components/`。
+> 清单见 [`FLUTTER_MIGRATION.md`](../FLUTTER_MIGRATION.md)。
 
 ---
 
@@ -282,112 +223,36 @@ fun ScaleIconButton(
 - 背景：Surface
 - 阴影：elevation 2dp
 
-```kotlin
-@Composable
-fun AppCard(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCorner(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            content = content
-        )
-    }
-}
+```dart
+// kit/lib/src/ui/components/cards.dart
+  const AppCard({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.padding = const EdgeInsets.all(16),
+    this.border,
+  });
 ```
 
 ### 4.2 小卡片 (SmallCard)
 
-```kotlin
-@Composable
-fun SmallCard(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCorner(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            content = content
-        )
-    }
-}
+```dart
+// kit/lib/src/ui/components/cards.dart
+  const SmallCard({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.padding = const EdgeInsets.all(12),
+  });
 ```
 
 ### 4.3 记录卡片 (RecordCard)
 
-```kotlin
-@Composable
-fun RecordCard(
-    record: Record,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCorner(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // 顶部信息栏
-            Row {
-                Text(
-                    text = formattedDate,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.weight(1f))
-            }
-            
-            // 标题
-            Text(
-                text = recordTitle,
-                style = MaterialTheme.typography.titleSmall,
-                maxLines = 2
-            )
-            
-            // 内容预览
-            if (contentPreview.isNotEmpty()) {
-                Text(
-                    text = contentPreview,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 3
-                )
-            }
-            
-            // 心情/天气
-            if (record.mood != null || record.weather != null) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    record.mood?.let { Text(it) }
-                    record.weather?.let { Text(it) }
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
-    }
-}
-```
+> **未迁到 Flutter**：RecordCard（记录卡）
+>
+> KMP 备份在仓库外 `kmp-legacy-backup/`，本仓库不维护。
+> 真的要这个组件，从备份里挑实现搬进 `kit/lib/src/ui/components/`。
+> 清单见 [`FLUTTER_MIGRATION.md`](../FLUTTER_MIGRATION.md)。
 
 ---
 
@@ -408,73 +273,31 @@ fun RecordCard(
 - 选中态：Primary @ 15% 背景，Primary 文字
 - 未选中态：SurfaceVariant 背景，OnSurfaceVariant 文字
 
-```kotlin
-@Composable
-fun FilterChip(
-    title: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    FilterChip(
-        selected = isSelected,
-        onClick = onClick,
-        label = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge
-            )
-        },
-        modifier = modifier,
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-            selectedLabelColor = MaterialTheme.colorScheme.primary
-        )
-    )
-}
+```dart
+// kit/lib/src/ui/components/chips.dart
+  const KitFilterChip({
+    super.key,
+    required this.title,
+    required this.isSelected,
+    required this.onTap,
+    this.leadingDotColor,
+    this.leadingIcon,
+  });
 ```
 
 ### 5.2 标签 (Tag)
 
-```kotlin
-@Composable
-fun Tag(
-    text: String,
-    color: Color,
-    onRemove: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCorner(8.dp),
-        color = color
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.White
-            )
-            if (onRemove != null) {
-                IconButton(
-                    onClick = onRemove,
-                    modifier = Modifier.size(16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "移除",
-                        modifier = Modifier.size(12.dp),
-                        tint = Color.White
-                    )
-                }
-            }
-        }
-    }
-}
+```dart
+// kit/lib/src/ui/components/tag_text.dart
+  const TagText({
+    super.key,
+    required this.text,
+    required this.color,
+    this.isSelected = false,
+    this.onTap,
+    this.selectedIcon = Icons.check,
+    this.showSelectedIcon = true,
+  });
 ```
 
 ---
@@ -483,112 +306,17 @@ fun Tag(
 
 ### 6.1 空状态插图 (IllustratedEmptyState)
 
-```kotlin
-@Composable
-fun IllustratedEmptyState(
-    icon: String,           // Material Icon name
-    title: String,
-    subtitle: String? = null,
-    actionTitle: String? = null,
-    onAction: (() -> Unit)? = null,
-    tintColor: Color = MaterialTheme.colorScheme.primary
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 40.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        // 图标容器
-        Box(
-            modifier = Modifier
-                .size(100.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                shape = CircleShape,
-                color = tintColor.copy(alpha = if (isSystemInDarkTheme()) 0.15f else 0.08f)
-            ) {}
-            
-            Icon(
-                imageVector = when (icon) {
-                    "person.crop.circle.badge.plus" -> Icons.Default.PersonAdd
-                    "target" -> Icons.Default.Flag
-                    "square.and.pencil" -> Icons.Default.Edit
-                    "magnifyingglass" -> Icons.Default.Search
-                    else -> Icons.Default.Info
-                },
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = tintColor.copy(alpha = if (isSystemInDarkTheme()) 0.85f else 0.7f)
-            )
-        }
-        
-        // 标题
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            textAlign = TextAlign.Center
-        )
-        
-        // 副标题
-        if (subtitle != null) {
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp)
-            )
-        }
-        
-        // 操作按钮
-        if (actionTitle != null && onAction != null) {
-            Button(
-                onClick = onAction,
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Text(actionTitle)
-            }
-        }
-    }
-}
-
-// 预设空状态
-object EmptyStates {
-    @Composable
-    fun Contacts(onAddContact: () -> Unit) = IllustratedEmptyState(
-        icon = "person.crop.circle.badge.plus",
-        title = "empty_no_contacts".stringResource(),
-        subtitle = "add_first_contact_subtitle".stringResource(),
-        actionTitle = "add_first_contact".stringResource(),
-        onAction = onAddContact,
-        tintColor = Color.Blue
-    )
-    
-    @Composable
-    fun Goals(onAddGoal: () -> Unit) = IllustratedEmptyState(
-        icon = "target",
-        title = "empty_no_goals".stringResource(),
-        subtitle = "add_first_goal_subtitle".stringResource(),
-        actionTitle = "add_first_goal".stringResource(),
-        onAction = onAddGoal,
-        tintColor = Color.Green
-    )
-    
-    @Composable
-    fun Records(onCreateRecord: () -> Unit) = IllustratedEmptyState(
-        icon = "square.and.pencil",
-        title = "no_records_recent".stringResource(),
-        subtitle = "start_first_record".stringResource(),
-        actionTitle = "create_record".stringResource(),
-        onAction = onCreateRecord,
-        tintColor = Color(0xFFFF9500)
-    )
-}
+```dart
+// kit/lib/src/ui/components/empty_state.dart
+  const IllustratedEmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.actionTitle,
+    this.onAction,
+    this.tintColor,
+  });
 ```
 
 ---
@@ -597,84 +325,26 @@ object EmptyStates {
 
 ### 7.1 Toast/Snackbar
 
-```kotlin
-@Composable
-fun AppSnackbar(
-    message: String,
-    isSuccess: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Snackbar(
-        modifier = modifier.padding(horizontal = 16.dp),
-        containerColor = MaterialTheme.colorScheme.inverseSurface,
-        contentColor = MaterialTheme.colorScheme.inverseOnSurface
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = if (isSuccess) Icons.Default.CheckCircle else Icons.Default.Error,
-                contentDescription = null,
-                tint = if (isSuccess) Color(0xFF34C759) else Color(0xFFFF3B30)
-            )
-            Text(message)
-        }
-    }
-}
-
-// 使用方式
-val snackbarHostState = remember { SnackbarHostState() }
-
-SnackbarHost(hostState = snackbarHostState) { data ->
-    AppSnackbar(
-        message = data.visuals.message,
-        isSuccess = data.visuals.actionLabel == "success"
-    )
-}
-
-// 显示
-scaffoldScope.launch {
-    snackbarHostState.showSnackbar(
-        message = "操作成功",
-        actionLabel = "success"
-    )
-}
+```dart
+// kit/lib/src/ui/components/feedback.dart
+  const AppSnackbar({
+    super.key,
+    required this.message,
+    required this.isSuccess,
+  });
 ```
 
 ### 7.2 加载指示器
 
-```kotlin
-@Composable
-fun LoadingIndicator(
-    modifier: Modifier = Modifier
-) {
-    CircularProgressIndicator(
-        modifier = modifier.size(48.dp),
-        strokeWidth = 3.dp
-    )
-}
+```dart
+// kit/lib/src/ui/components/feedback.dart
+  const LoadingIndicator({super.key});
 
-@Composable
-fun LoadingOverlay(
-    isLoading: Boolean,
-    content: @Composable () -> Unit
-) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        content()
-        
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f)),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = Color.White)
-            }
-        }
-    }
-}
+  const LoadingOverlay({
+    super.key,
+    required this.isLoading,
+    required this.child,
+  });
 ```
 
 ---
@@ -683,124 +353,11 @@ fun LoadingOverlay(
 
 ### 8.1 悬浮工具栏 (FloatingToolbar)
 
-```kotlin
-@Composable
-fun FloatingToolbar(
-    text: String,
-    onTextChange: (String) -> Unit,
-    images: List<ByteArray>,
-    onImagesChange: (List<ByteArray>) -> Unit,
-    selectedMood: String?,
-    onMoodChange: (String?) -> Unit,
-    showMoodSelector: Boolean,
-    goals: List<Goal>,
-    contacts: List<Contact>,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 20.dp),
-        shape = RoundedCorner(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        shadowElevation = 8.dp
-    ) {
-        Column {
-            // 主要工具栏
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // 添加图片
-                ToolbarIconButton(
-                    icon = Icons.Default.Photo,
-                    contentDescription = "添加图片",
-                    onClick = { /* 打开图片选择器 */ }
-                )
-                
-                // 心情选择
-                if (showMoodSelector) {
-                    MoodSelector(
-                        selectedMood = selectedMood,
-                        onMoodSelected = onMoodChange
-                    )
-                }
-                
-                // 目标引用
-                GoalReferenceButton(
-                    goals = goals,
-                    onGoalSelected = { goal -> 
-                        onTextChange(text + "#${goal.name} ")
-                    }
-                )
-                
-                // 人脉引用
-                ContactReferenceButton(
-                    contacts = contacts,
-                    onContactSelected = { contact ->
-                        onTextChange(text + "@${contact.name} ")
-                    }
-                )
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // 字数统计
-                Text(
-                    text = "$text",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            
-            // 图片缩略图（如果有）
-            if (images.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    images.forEachIndexed { index, imageData ->
-                        ImageThumbnail(
-                            imageData = imageData,
-                            onRemove = {
-                                onImagesChange(images.toMutableList().apply { removeAt(index) })
-                            }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ToolbarIconButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit
-) {
-    IconButton(
-        onClick = onClick,
-        modifier = Modifier
-            .size(32.dp)
-            .background(
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                RoundedCornerShape(8.dp)
-            )
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-```
+> **未迁到 Flutter**：FloatingToolbar（悬浮工具栏）+ ToolbarIconButton
+>
+> KMP 备份在仓库外 `kmp-legacy-backup/`，本仓库不维护。
+> 真的要这个组件，从备份里挑实现搬进 `kit/lib/src/ui/components/`。
+> 清单见 [`FLUTTER_MIGRATION.md`](../FLUTTER_MIGRATION.md)。
 
 ---
 
@@ -808,79 +365,17 @@ private fun ToolbarIconButton(
 
 ### 9.1 统计项 (StatItem)
 
-```kotlin
-@Composable
-fun StatItem(
-    title: String,
-    value: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = color
-        )
-        
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
+```dart
+// kit/lib/src/ui/components/stats.dart
+  const StatItem({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
 
-@Composable
-fun StatsCard(
-    stats: List<StatItemData>,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCorner(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            stats.forEach { stat ->
-                StatItem(
-                    title = stat.title,
-                    value = stat.value,
-                    icon = stat.icon,
-                    color = stat.color,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-data class StatItemData(
-    val title: String,
-    val value: String,
-    val icon: ImageVector,
-    val color: Color
-)
+  const StatsCard({super.key, required this.stats});
 ```
 
 ---
@@ -889,68 +384,30 @@ data class StatItemData(
 
 ### 10.1 溢出菜单按钮 (MenuButton)
 
-```kotlin
-@Composable
-fun <T> MenuButton(
-    items: List<MenuItem<T>>,
-    onItemSelected: (T) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-    
-    Box(modifier = modifier) {
-        IconButton(
-            onClick = { expanded = true }
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .background(
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "更多选项",
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
-        
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            items.forEach { item ->
-                DropdownMenuItem(
-                    text = { Text(item.title) },
-                    onClick = {
-                        onItemSelected(item.data)
-                        expanded = false
-                    },
-                    leadingIcon = if (item.icon != null) {
-                        { Icon(item.icon, contentDescription = null) }
-                    } else null
-                )
-            }
-        }
-    }
-}
+```dart
+// kit/lib/src/ui/components/menu.dart
+  const SimpleMenuButton({
+    super.key,
+    required this.items,
+    required this.onItemSelected,
+    this.contentDescription,
+    this.icon = Icons.more_vert,
+  });
 
-data class MenuItem<T>(
-    val title: String,
-    val icon: ImageVector? = null,
-    val data: T
-)
+  const SimpleMenuItem({
+    this.title = '',
+    this.icon,
+    this.trailingIcon,
+    this.isDivider = false,
+    this.subItems = const <SimpleMenuItem>[],
+  });
 ```
 
 ---
 
 ## 11. 动画规范
 
-动效**全部**来自 `kit/src/commonMain/kotlin/com/androidkit/app/ui/theme/Motion.kt` 的 `M3Motion`。
+动效**全部**来自 `kit/lib/src/theme/motion.dart` 的 `M3Motion`。
 页面/组件里**不许手写** `tween` / `spring` 的时长与 easing 字面量 —— 需要新节奏就先加 token。
 
 选型表（什么场景用哪个预设）在 `rules/GOOGLE_STYLE.md` §动效，**这里不重复**：两处维护必然漂移，
@@ -998,7 +455,7 @@ data class MenuItem<T>(
 
 ### 11.4 页面级转场
 
-组件内部用 `M3Motion`，**整页之间**用 `kit/src/commonMain/kotlin/com/androidkit/app/ui/navigation/NavTransitions.kt`：
+组件内部用 `M3Motion`，**整页之间**用 `kit/lib/src/theme/motion.dart` 的转场曲线：
 
 | 场景 | 用什么 |
 |---|---|
@@ -1021,56 +478,16 @@ data class MenuItem<T>(
 
 ### 12.1 Material 3 主题
 
-```kotlin
-// Color.kt
-private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF007AFF),
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFF007AFF).copy(alpha = 0.15f),
-    onPrimaryContainer = Color(0xFF007AFF),
-    secondary = Color(0xFF5856D6),
-    onSecondary = Color.White,
-    error = Color(0xFFFF3B30),
-    onError = Color.White,
-    background = Color(0xFFF2F2F7),
-    onBackground = Color.Black,
-    surface = Color.White,
-    onSurface = Color.Black,
-    surfaceVariant = Color(0xFFE5E5EA),
-    onSurfaceVariant = Color(0xFF3C3C43)
-)
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF0A84FF),
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFF0A84FF).copy(alpha = 0.15f),
-    onPrimaryContainer = Color(0xFF0A84FF),
-    secondary = Color(0xFF5E5CE6),
-    onSecondary = Color.White,
-    error = Color(0xFFFF453A),
-    onError = Color.White,
-    background = Color.Black,
-    onBackground = Color.White,
-    surface = Color(0xFF1C1C1E),
-    onSurface = Color.White,
-    surfaceVariant = Color(0xFF2C2C2E),
-    onSurfaceVariant = Color(0xFFEBEBF5)
-)
-
-// Theme.kt
-@Composable
-fun AppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-    
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography(),
-        content = content
-    )
-}
+```dart
+// kit/lib/src/theme/app_theme.dart
+  const AppTheme({
+    super.key,
+    this.style = ThemeStyle.mono,
+    this.darkTheme,
+    this.tokens,
+    this.reducedMotion = false,
+    required this.child,
+  });
 ```
 
 ---
@@ -1081,19 +498,20 @@ fun AppTheme(
 
 | 组件 | 文件 |
 |------|------|
-| `FilterChip` | `ui/components/Chips.kt` |
-| `ScaleIconButton` | `ui/components/Buttons.kt` |
-| `RecordCard` | `ui/components/Cards.kt` |
-| `IllustratedEmptyState` | `ui/components/EmptyState.kt` |
-| `AppSnackbar` | `ui/components/Feedback.kt` |
-| `StatItem` | `ui/components/Stats.kt` |
-| `PrimaryButton` / `SecondaryButton` / `EditButton` / `DeleteButton` / `TextActionButton` | `ui/components/Buttons.kt` |
-| `AppCard` / `SmallCard` | `ui/components/Cards.kt` |
-| `SimpleTextField` | `ui/components/TextFields.kt` |
-| `ConfirmDialog` / `DeleteConfirmDialog` / `InputDialog` / `SelectDialog` | `ui/components/Dialogs.kt` |
-| `SelectDropdown` | `ui/components/Dropdowns.kt` |
-| `AddFab` | `ui/components/Buttons.kt` |
-| `Header` | `ui/components/Header.kt` |
-| `LinearProgressBar` / `CircularProgressIndicatorWithText` | `ui/components/Progress.kt` |
-| 设计令牌（尺寸） | `res/values/dimens.xml` |
-| 颜色 / 排版 / 主题 | `ui/theme/Color.kt`、`ColorMono.kt`、`Type.kt`、`Theme.kt` |
+| `KitFilterChip` | `kit/lib/src/ui/components/chips.dart` |
+| `TagText` | `kit/lib/src/ui/components/tag_text.dart` |
+| `IllustratedEmptyState` | `kit/lib/src/ui/components/empty_state.dart` |
+| `AppSnackbar` | `kit/lib/src/ui/components/feedback.dart` |
+| `StatItem` | `kit/lib/src/ui/components/stats.dart` |
+| `PrimaryButton` / `SecondaryButton` / `FilledIconButton` / `TextActionButton` | `kit/lib/src/ui/components/buttons.dart` |
+| `AppCard` / `SmallCard` | `kit/lib/src/ui/components/cards.dart` |
+| `SimpleTextField` | `kit/lib/src/ui/components/text_fields.dart` |
+| `ConfirmDialog` / `DeleteConfirmDialog` / `InputDialog` / `SelectDialog` | `kit/lib/src/ui/components/dialogs.dart` |
+| `SelectDropdown` | `kit/lib/src/ui/components/dropdowns.dart` |
+| `Header` | `kit/lib/src/ui/components/header.dart` |
+| `LinearProgressBar` / `CircularProgressIndicatorWithText` | `kit/lib/src/ui/components/progress.dart` |
+| 设计令牌（尺寸） | `kit/lib/src/theme/kit_shapes.dart` |
+| 颜色 / 排版 / 主题 | `kit/lib/src/theme/palettes.dart`、`typography_tokens.dart`、`theme_tokens.dart`、`app_theme.dart` |
+
+> `ScaleIconButton` / `RecordCard` / `FloatingToolbar` **未迁**，见上文对应小节与
+> [`FLUTTER_MIGRATION.md`](../FLUTTER_MIGRATION.md)。

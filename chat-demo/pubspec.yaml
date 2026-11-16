@@ -1,0 +1,22 @@
+name: chat_demo
+description: 桌面对话 demo —— 验证 kit + agent 的对话链路。
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.14.0
+
+resolution: workspace
+dependencies:
+  flutter:
+    sdk: flutter
+  kit:
+    path: ../kit
+  kit_agent:
+    path: ../kit-agent
+  material_ui: ^1.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

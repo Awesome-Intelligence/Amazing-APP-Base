@@ -1,0 +1,15 @@
+name: kit_membership
+description: 会员 / 订阅 / 用量计费 —— 纯逻辑框架（档位表 + 权益/额度引擎 + 落盘）。Flutter 版。
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: ^3.14.0
+
+resolution: workspace
+# 纯 Dart 包：不依赖 Flutter，也不依赖 kit —— kit 反过来依赖它（付费墙 UI 在 kit 里）。
+# 依赖方向单线，才不会形成环。
+dependencies: {}
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^6.0.0

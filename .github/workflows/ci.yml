@@ -1,271 +1,136 @@
+# 门禁的**逻辑**在 scripts/ci.sh，这里只负责「在什么环境跑哪道门禁」。
+#
+# 为什么不把命令写在这份 YAML 里：fork 要加自己的门禁时改 YAML 就等于改底座
+# （跟上游冲突）。把逻辑留在 scripts/ 里，fork 只加一个 scripts/checks/xxx.sh 就行。
 name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main]
   pull_request:
-    branches: [ main, develop ]
+  workflow_dispatch:
 
-# 最小权限：CI 只读代码、传产物，不给 GITHUB_TOKEN 写权限
-permissions:
-  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
-  JAVA_VERSION: '17'
-  # 刻意不设 ANDROID_COMPILE_SDK：compileSdk 的唯一出处是各模块 build.gradle.kts，
-  # 这里再写一份就是第二处真相（而且这份 ci.yml 会被 install-kit.sh 原样拷进别的项目，
-  # 那边 compileSdk 未必一样）。AGP 会按 build.gradle.kts 里声明的版本自动装对应平台。
-
-# 这份 YAML 是「薄壳」：每个 job 只说「在什么环境跑哪道门禁」，
-# 门禁逻辑全在 scripts/ci.sh 里 —— fork 想改门禁改脚本，不动这个文件（它是底座路径）。
-# 加一道新门禁的完整步骤见 scripts/ci.sh 头部注释。
+  # 关掉 Flutter 的首次启动分析上报，CI 上省几秒
+  FLUTTER_SUPPRESS_ANALYTICS: "true"
 
 jobs:
-  build:
-    name: Build (Android)
+  verify:
+    name: Verify (scripts)
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
-
-      - name: Setup JDK + Android SDK
-        uses: ./.github/actions/setup-gradle
+      - uses: actions/checkout@v5
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          android: 'true'
-
-      # 遍历 apps/ 下所有模块：fork 加新 app 只需新建 apps/<name>/，不用改这份 ci.yml
-      - name: Build Android apps
-        run: bash scripts/ci.sh build-android
-
-      - name: Upload debug APK
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
-        if: success()
+          # 子模块（skills/ 下的两个上游镜像）必须初始化 —— verify 那道门禁要检查目录非空
+          submodules: true
+      - uses: actions/setup-python@v6
         with:
-          name: debug-apk
-          path: apps/*/build/outputs/apk/debug/*.apk
-          retention-days: 7
+          python-version: "3.12"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      # verify / contract 这两道不依赖 Flutter SDK —— 单独一个 job，
+      # 契约或分层出问题时不用等三分钟的 SDK 安装
+      - name: Contract + layers + secrets
+        run: bash scripts/ci.sh verify
+      - name: Mini-program contract
+        run: bash scripts/ci.sh contract
 
-  desktop:
-    name: Build (Desktop)
+  analyze:
+    name: Analyze
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
-
-      - name: Setup JDK
-        uses: ./.github/actions/setup-gradle
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          android: 'false'
-
-      # 测试在下面的 unit-test job 跑，这里只管编译和打包，别跑两遍
-      - name: Compile desktop
-        run: bash scripts/ci.sh build-desktop
-
-      - name: Package desktop
-        run: bash scripts/ci.sh package-deb
-
-      - name: Upload desktop package
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
-        if: success()
-        with:
-          name: desktop-deb
-          path: kit/build/compose/binaries/main/deb/*.deb
-          retention-days: 7
-
-  ios:
-    name: Build (iOS)
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
-
-      - name: Setup JDK
-        uses: ./.github/actions/setup-gradle
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          android: 'false'
-
-      # iOS 目标只在 macOS host 上能编（Kotlin/Native 限制）
-      # linkDebugFramework* 产出的 .framework 就是 Xcode 要 import 的东西
-      - name: Link iOS frameworks
-        run: bash scripts/ci.sh build-ios
-
-      - name: Upload iOS frameworks
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
-        if: success()
-        with:
-          name: ios-frameworks
-          path: kit/build/bin/ios*/debugFramework/
-          retention-days: 7
-
-  ios-app:
-    name: Build (iOS App)
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
-
-      - name: Setup JDK
-        uses: ./.github/actions/setup-gradle
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          android: 'false'
-
-      # iOS 壳工程的 Xcode 工程是 XcodeGen 生成的（apps/*/ios/project.yml）
-      - name: Install XcodeGen
-        run: brew install xcodegen
-
-      # 遍历 apps/ 下所有带 ios/ 目录的 app：
-      # fork 加新 app 只需建 apps/<name>/ios/，不用改这份 ci.yml
-      - name: Build iOS apps
+          channel: stable
+          flutter-version: "3.50.0"
+          cache: true
+      - name: bootstrap + analyze
         run: |
-          rc=0
-          for d in apps/*/ios; do
-            [ -d "$d" ] || continue
-            bash "$d/build.sh" || rc=1
-          done
-          exit $rc
+          bash scripts/ci.sh bootstrap
+          bash scripts/ci.sh analyze
 
-  lint:
-    name: Lint
+  test:
+    name: Test
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
-
-      - name: Setup JDK + Android SDK
-        uses: ./.github/actions/setup-gradle
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          android: 'true'
-
-      - name: Run lint
-        run: bash scripts/ci.sh lint
-
-      - name: Upload lint report
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
-        if: always()
-        with:
-          name: lint-report
-          path: apps/*/build/reports/lint-results-debug.html
-          retention-days: 7
-
-  unit-test:
-    name: Unit Test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
-
-      - name: Setup JDK
-        uses: ./.github/actions/setup-gradle
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          android: 'false'
-
-      # 真正的测试都在 kit / kit-agent-koog 的 desktopTest（commonTest 只在 JVM 跑得起来）。
-      # apps/* 的 testDebugUnitTest 目前都是 NO-SOURCE，但 fork 的 app 加了单测就自动进来。
-      - name: Run unit tests
-        run: bash scripts/ci.sh test
-
-      - name: Upload test report
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
-        if: always()
-        with:
-          name: test-report
-          path: |
-            kit/build/reports/tests/desktopTest/
-            kit-agent-koog/build/reports/tests/desktopTest/
-            kit-membership/build/reports/tests/desktopTest/
-          retention-days: 14
-
-      - name: Upload test results
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
-        if: always()
-        with:
-          name: test-results
-          path: |
-            kit/build/test-results/desktopTest/
-            kit-agent-koog/build/test-results/desktopTest/
-            kit-membership/build/test-results/desktopTest/
-          retention-days: 14
-
-  static-check:
-    name: Static check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
-
-      - name: Setup JDK
-        uses: ./.github/actions/setup-gradle
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          android: 'false'
-
-      # detekt / apiCheck / verify-*.py 全在这里。
-      # 每道门禁失败只记一次，最后统一报 —— 一道红了不用重跑前面的。
-      - name: Run static gates
-        run: bash scripts/ci.sh detekt api verify
-
-      - name: Upload detekt report
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
-        if: always()
-        with:
-          name: detekt-report
-          path: |
-            kit/build/reports/detekt/
-            kit-agent-koog/build/reports/detekt/
-            kit-membership/build/reports/detekt/
-          retention-days: 14
+          channel: stable
+          flutter-version: "3.50.0"
+          cache: true
+      - name: bootstrap + test
+        run: |
+          bash scripts/ci.sh bootstrap
+          bash scripts/ci.sh test
 
   backend:
     name: Backend (gateway)
     runs-on: ubuntu-latest
-
+    # agent 网关（backend/）：tsc --noEmit + 冒烟检查。冒烟不花钱、不连网。
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
-
-      # 这份 ci.yml 会被 install-kit.sh 原样拷进只装 KMP 模块的消费方项目，
-      # 那些项目没有 backend/ 目录 —— 脚本自己判断，没 backend/ 就跳过。
-      - name: Setup Node
-        if: ${{ hashFiles('backend/package.json') != '' }}
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "22"
+          cache: npm
           cache-dependency-path: backend/package-lock.json
-
-      # 类型检查 + 契约冒烟：不花钱、不连网（skill 加载 + JSON Schema 校验 + parseOutput + SSE 断连检测）
-      - name: Typecheck + smoke test
-        if: ${{ hashFiles('backend/package.json') != '' }}
+      - name: npm ci
+        run: npm ci
+        working-directory: backend
+      - name: Type check + smoke
         run: bash scripts/ci.sh backend
 
-      # 起一次真服务器，验路由真的通（express 大版本升级最容易在这里炸）
-      - name: Boot check
-        if: ${{ hashFiles('backend/package.json') != '' }}
-        working-directory: backend
-        run: |
-          node --import tsx src/server.ts > /tmp/gateway.log 2>&1 &
-          PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:8787/health > /dev/null; then
-              curl -sf http://localhost:8787/v1/skills
-              kill $PID
-              exit 0
-            fi
-            sleep 1
-          done
-          cat /tmp/gateway.log
-          kill $PID 2>/dev/null || true
-          exit 1
+  build:
+    name: Build (web + android)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.50.0"
+          cache: true
+      - name: bootstrap
+        run: bash scripts/ci.sh bootstrap
+      - name: Build
+        run: bash scripts/ci.sh build
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-web
+          path: apps/demo/build/web
+          retention-days: 7
+      - name: Upload debug apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-apk
+          path: apps/demo/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
+          if-no-files-found: ignore
+
+  base-guard:
+    name: Base guard (底座不许改)
+    runs-on: ubuntu-latest
+    # 只在 PR 上跑：push 到 main 说明底座改动已经合了，再拦没意义。
+    # pull_request_target 让 workflow 永远取 base 分支的版本，PR 改不动它。
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Check protected paths
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+        run: bash scripts/check-base-unchanged.sh --base "$BASE_REF"

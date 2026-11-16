@@ -1,0 +1,31 @@
+name: kit
+description: 通用层（UI 组件 + 数据层：存储/设置/契约/版本检查/多语言）。Flutter 版。
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: ^3.14.0
+
+resolution: workspace
+dependencies:
+  flutter:
+    sdk: flutter
+  # 底座自带中英文文案，Material 内置控件文案也要跟着切
+  flutter_localizations:
+    sdk: flutter
+  # 付费墙 / 升级页要用到 PlanOption 这类展示类型。
+  # KMP 里是 kit-membership 依赖 kit；Flutter 这边反过来让 kit 依赖 membership ——
+  # membership 本身是纯 Dart、零依赖，不会绕回来形成环。
+  kit_membership:
+    path: ../kit-membership
+  # 聊天展示模型的映射（运行态 → 展示态）放在 kit_ui 里，需要 kit_agent 的消息类型。
+  # kit_agent 是纯 Dart 包，不会把 Flutter 带进来（反向不行：kit_agent 不能依赖 kit）。
+  kit_agent:
+    path: ../kit-agent
+  # 版本检查要发 HTTP。用 http 而不是 dart:io：IOClient / BrowserClient 覆盖全平台
+  http: ^1.2.0
+  # Flutter 3.47 起 material.dart 拆到官方独立包 material_ui
+  material_ui: ^1.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

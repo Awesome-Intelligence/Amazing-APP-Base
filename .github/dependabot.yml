@@ -1,7 +1,7 @@
 version: 2
 updates:
-  # Gradle 依赖（含 libs.versions.toml 里的版本）
-  - package-ecosystem: gradle
+  # Dart / Flutter 依赖（workspace 根 pubspec.lock 一处管全部包）
+  - package-ecosystem: pub
     directory: /
     schedule:
       interval: weekly
@@ -17,6 +17,14 @@ updates:
   # backend 网关（npm）
   - package-ecosystem: npm
     directory: /backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # skills/ 下的上游镜像（submodule）—— 上游一更新就自动开 PR 挪指针。
+  # 这个 PR 碰的是子模块指针，不是底座文件，base-guard 已豁免。
+  - package-ecosystem: submodules
+    directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 5

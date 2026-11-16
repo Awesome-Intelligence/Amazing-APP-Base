@@ -1,0 +1,18 @@
+name: android_kit_workspace
+description: 底座工作区 —— Flutter 版。kit / kit-agent / kit-membership / chat-demo / apps/* 都在这儿。
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.14.0
+
+# pub 工作区：一次 pub get 解决全部依赖，各包之间用 path 依赖互相引用。
+#
+# apps/* 用通配符：fork 加自己的 app 不用改根 pubspec（那是底座路径，改了必冲突）。
+# 新 app 的 pubspec 必须写 `resolution: workspace`。
+workspace:
+  - kit
+  - kit-agent
+  - kit-membership
+  - chat-demo
+  - apps/*

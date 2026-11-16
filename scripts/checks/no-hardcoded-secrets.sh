@@ -1,37 +1,33 @@
 #!/usr/bin/env bash
-# 示例门禁：仓库里不许出现硬编码的 API key。
+# 密钥检查 —— 仓库里出现 API key 就直接失败。
 #
-# 这道门禁存在的理由：key 进了版本库 = 泄漏了（git 历史里还在，删了文件也没用）。
-# 底座多处强调「key 不进仓库」，但靠 review 抓不住 —— 复制粘贴一次就漏。
+# 为什么要这道：key 一旦进了 git 历史，删掉文件也没用（历史里还在），
+# 只能换 key。所以拦在提交前最省事。
 #
-# 判据：源码/配置里出现形如 sk-ant-… / sk-… 的长串。
-# 明显是示例的短串（"sk-xxx"）长度不够，不匹配。
-#
-# 用 grep -r 而不是 git grep：git grep 只看已跟踪的文件，
-# 新写的文件在提交前是未跟踪的 —— 那正是最容易漏的时候。
-#
-# 退出码：0 = 干净，1 = 找到疑似 key。
-set -uo pipefail
+# 只扫源码和配置，跳过依赖目录与构建产物。
+# 放行：在那一行加 `// pragma: allowlist secret`（只用于确实是测试假值的场合）。
+set -o pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT" || exit 1
 
-HITS="$(grep -rInE '(sk-ant-[A-Za-z0-9_-]{16,}|sk-[A-Za-z0-9]{32,})' \
-  --include='*.kt' --include='*.kts' --include='*.java' --include='*.xml' \
-  --include='*.json' --include='*.ts' --include='*.js' --include='*.yml' \
-  --include='*.yaml' --include='*.properties' --include='*.md' \
-  --exclude-dir=build --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=node_modules \
-  --exclude-dir=.kotlin --exclude='*.api' --exclude='verification-metadata.xml' \
-  . 2>/dev/null || true)"
+# 常见的密钥形态：Anthropic / OpenAI / AWS / GitHub / 私钥块
+PATTERN='sk-ant-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{32,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
 
-if [ -z "$HITS" ]; then
-  echo "✓ 没找到硬编码的 API key"
-  exit 0
+HITS=$(grep -rnE "$PATTERN" \
+  --include='*.dart' --include='*.js' --include='*.ts' --include='*.yaml' \
+  --include='*.yml' --include='*.json' --include='*.md' --include='*.sh' \
+  . 2>/dev/null \
+  | grep -v '/build/' \
+  | grep -v '/.dart_tool/' \
+  | grep -v '/node_modules/' \
+  | grep -v '/.git/' \
+  | grep -v 'allowlist secret' || true)
+
+if [ -n "$HITS" ]; then
+  echo "  发现疑似密钥（key 进了 git 历史就只能换，不能只删文件）："
+  echo "$HITS" | sed 's/^/    /'
+  exit 1
 fi
 
-echo "✗ 找到疑似硬编码的 API key："
-echo "$HITS" | sed 's/^/  - /'
-echo
-echo "  key 进了版本库就是泄漏了（git 历史里还在，删文件也没用）。"
-echo "  要撤销：去 Anthropic 控制台吊销这个 key，重新发一个。"
-exit 1
+exit 0

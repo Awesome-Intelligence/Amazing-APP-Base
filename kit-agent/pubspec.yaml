@@ -1,0 +1,17 @@
+name: kit_agent
+description: agent 运行时底座（dart_agent_core 封装），契约同构 KMP kit-agent-koog。
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: ^3.14.0
+
+resolution: workspace
+# 纯 Dart 包：不碰 Flutter —— 引擎逻辑在后台 isolate / 单元测试里都能跑。
+dependencies:
+  dart_agent_core: ^2.1.9
+  # 网关运行时的 HTTP + SSE 流
+  http: ^1.2.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^6.0.0

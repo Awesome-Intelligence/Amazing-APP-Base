@@ -32,6 +32,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
+          # 刻意不拉子模块：这道门禁只比对 gitlink 指针（子模块内容不在本仓库里），
+          # 拉下来只是浪费 CI 时间。要子模块的是 ci.yml 那边的 verify 门禁。
 
       - name: Fetch PR head
         run: git fetch --no-tags origin +refs/pull/${{ github.event.pull_request.number }}/head:pr-head
@@ -52,6 +54,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
+          # 同样不拉子模块 —— 只比对指针。
 
       - name: Fetch PR head
         run: git fetch --no-tags origin +refs/pull/${{ github.event.pull_request.number }}/head:pr-head
