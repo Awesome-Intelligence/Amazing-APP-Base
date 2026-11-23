@@ -150,7 +150,7 @@ await skill.runSamples({...})  // 黄金样例：不调模型、不花钱、不�
 | `DropdownButton` | `SelectDropdown` |
 | `AppBar` | `Header` |
 | `Linear/CircularProgressIndicator` | `LinearProgressBar` `CircularProgressIndicatorWithText` |
-| `ScaffoldMessenger.showSnackBar` | `showAppSnackbar` |
+| `ScaffoldMessenger.showSnackBar` | `showAppNotice` |
 
 新组件先封进 `kit/lib/src/ui/components/` 再用。无法封装的（`showModalBottomSheet` 容器等）
 加 `// ui:allow-raw` 并注明理由。

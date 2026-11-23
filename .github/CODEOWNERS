@@ -9,7 +9,8 @@
 
 # 底座目录（改了会跟上游冲突，改动要更谨慎）
 /kit/ @zackal
-/kit-agent-koog/ @zackal
+/kit-agent/ @zackal
+/kit-membership/ @zackal
 /backend/ @zackal
 /.github/ @zackal
 
@@ -17,5 +18,5 @@
 /apps/demo/ @zackal
 
 # 锁文件：升级依赖才动，别顺手改
-/gradle/libs.versions.toml @zackal
+/pubspec.lock @zackal
 /backend/package-lock.json @zackal

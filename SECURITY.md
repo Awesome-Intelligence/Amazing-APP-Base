@@ -28,7 +28,7 @@
 
 这几条是这套架构的安全底线，改代码时别绕过：
 
-1. **key 永远不进版本库。**（`gradle.properties` / `local.properties` / CI secret）
+1. **key 永远不进版本库。**（`key.properties` / `local.properties` / CI secret）
 2. **日志只记事件类型，不记对话正文。**对话内容可能含用户隐私。
 3. **工具返回值是数据，不是指令。**prompt injection 的入口就在这里。
 4. **危险工具执行前必须过闸门。**闸门要在工具**真正执行前**拦，不是执行后补救。

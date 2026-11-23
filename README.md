@@ -3,9 +3,6 @@
 **Flutter 底座** —— agent 应用的最小完整形态：**UI + skill + agent 循环 + 跨端契约**，
 一套 Dart 代码跑 Android / iOS / Desktop / Web。
 
-> 这个仓库原来是 Compose Multiplatform（Kotlin + Koog）版本，2026-11-16 全量换成 Flutter。
-> Kotlin 源码备份在仓库外 `E:\Awesome Intelligence\kmp-legacy-backup\`，不再演进。
-
 ---
 
 ## 一句话架构
@@ -30,7 +27,7 @@
 ## 目录
 
 ```
-KMP Skill APP/
+Flutter Skill APP/
 ├── pubspec.yaml               pub workspace 根（一次 pub get 解析全部包）
 ├── kit/                       ← 底座（fork 不许改）UI 组件 + 数据层
 ├── kit-agent/                 ← 底座：agent 契约 + dart_agent_core 封装 + 网关
@@ -44,7 +41,7 @@ KMP Skill APP/
 ├── backend/                   agent 网关（TypeScript，可选）
 ├── scripts/ci.sh              所有门禁的唯一出处（CI 与本地同一份）
 ├── scripts/verify_*.py        契约对齐 / 分层检查 / 网关协议检查
-├── FLUTTER_MIGRATION.md       KMP → Flutter 迁移清单（迁了什么、没迁什么）
+├── FLUTTER_MIGRATION.md       未迁组件清单（哪些组件故意没做、为什么）
 └── .github/workflows/ci.yml   只声明「在什么环境跑哪道门禁」
 ```
 
@@ -69,6 +66,30 @@ flutter 不在 PATH 时，脚本支持 `FLUTTER_BIN=/path/to/flutter`。
 
 接真模型：`ANTHROPIC_API_KEY` 通过环境变量传给 `DartAgentRuntime`；
 **别写进仓库**，打进包里也能被提取出来。正式上架把 `baseUrl` 指向自己的转发代理。
+
+## 推送（可选配，全不配也不影响）
+
+两条通道进来，最后都落到同一份站内消息（角标 + 消息中心），并弹一条系统通知：
+
+| 通道 | 装什么 | 什么场景能收到 | 怎么配 |
+|---|---|---|---|
+| **ntfy**（[ntfy.sh](https://ntfy.sh) 或自建） | `kit` 里的 `NtfyClient`（纯 HTTP） | app 活着（web / 桌面 / 移动端都行） | `--dart-define=NTFY_SERVER=https://ntfy.sh --dart-define=NTFY_TOPIC=my-app`，可选 `NTFY_TOKEN` |
+| **FCM**（Firebase Cloud Messaging） | `apps/demo` 引 `firebase_messaging` | app 被杀也能到（移动端） | `--dart-define=FIREBASE_API_KEY/APP_ID/SENDER_ID/PROJECT_ID` |
+
+app 侧：
+
+```bash
+cd apps/demo && flutter run -d android \
+  --dart-define=NTFY_SERVER=https://ntfy.sh \
+  --dart-define=NTFY_TOPIC=my-app \
+  --dart-define=GATEWAY_URL=http://127.0.0.1:8787 \
+  --dart-define=GATEWAY_TOKEN=xxx
+```
+
+网关侧（`backend/`）：`NTFY_TOPIC`（+ 可选 `NTFY_TOKEN`）让助手回复推到 ntfy；
+`FCM_PROJECT_ID` + `FCM_SERVICE_ACCOUNT_JSON`（服务账号 JSON 原文）让它推到 FCM。
+客户端用 `POST /v1/devices` 登记 FCM token，网关从 `POST /v1/notify` 或带 `notify: true`
+的调用里触发推送。凭据全走环境变量 / `--dart-define`，**不写进仓库**。
 
 ## 门禁
 
@@ -166,20 +187,20 @@ token 驱动：`ThemeTokens`（颜色 + 扩展色 + 排版 + 圆角 + 标签色�
 （Mono / Swiss / Notion / EInk / macOS），**一套组件**靠 `KitTheme.of(context)` 取当前 tokens。
 `KitAppShell` 一步给齐：5 套风格 + 跟随系统深浅 + 中英切换。
 
-## 和旧版（KMP）的对应
+## 特性
 
-| | KMP 版（已备份） | 本仓库 |
-|---|---|---|
-| UI | Compose Multiplatform | Flutter Widget |
-| agent 底座 | Koog（Kotlin 原生） | `dart_agent_core` |
-| 多包管理 | Gradle multi-module | **pub workspace** |
-| 平台 | Android / iOS / Desktop | Android / iOS / Desktop / **Web** |
-| 主题 | 每套风格一组组件 | **token 驱动**（一套组件） |
-| 门禁 | detekt / apiCheck / gradle test | analyze / test / contract / verify / base-guard |
+| | 本仓库 |
+|---|---|
+| UI | Flutter Widget，一套组件 + 5 套主题 tokens |
+| agent 底座 | `dart_agent_core`（本机运行）+ 可选 TS 网关 |
+| 多包管理 | **pub workspace**（根 `pubspec.yaml` 一次解析全部包） |
+| 平台 | Android / iOS / Desktop / **Web** |
+| 主题 | **token 驱动**（一套组件） |
+| 门禁 | analyze / test / contract / verify / base-guard |
 
-`backend/`（TypeScript 网关）与小程序端（JS）两边都直接复用，行为不变。
+`backend/`（TypeScript 网关）与小程序端（JS）两端直接复用。
 
-**哪些组件没迁、为什么** 见 [`FLUTTER_MIGRATION.md`](FLUTTER_MIGRATION.md)。
+**哪些组件没做、为什么** 见 [`FLUTTER_MIGRATION.md`](FLUTTER_MIGRATION.md)。
 
 ## 许可
 

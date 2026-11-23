@@ -1,6 +1,6 @@
 # 待办助手 —— 微信小程序端
 
-小程序端是**另一个客户端**，不是 Compose 的新 target（小程序没有 DOM/Skiko，
+小程序端是**另一个客户端**，不是 Flutter 的新 target（小程序没有 DOM/Skiko，
 WASM 也进不去 —— 详见 `rules/MULTI-CLIENT.md`）。它**不含 agent 底座**。
 
 ## 目录

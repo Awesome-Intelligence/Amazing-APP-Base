@@ -199,7 +199,7 @@
 
 > **未迁到 Flutter**：ScaleIconButton（带缩放动效的图标按钮）
 >
-> KMP 备份在仓库外 `kmp-legacy-backup/`，本仓库不维护。
+> 旧实现备份在仓库外 `kmp-legacy-backup/`，本仓库不维护。
 > 真的要这个组件，从备份里挑实现搬进 `kit/lib/src/ui/components/`。
 > 清单见 [`FLUTTER_MIGRATION.md`](../FLUTTER_MIGRATION.md)。
 
@@ -250,7 +250,7 @@
 
 > **未迁到 Flutter**：RecordCard（记录卡）
 >
-> KMP 备份在仓库外 `kmp-legacy-backup/`，本仓库不维护。
+> 旧实现备份在仓库外 `kmp-legacy-backup/`，本仓库不维护。
 > 真的要这个组件，从备份里挑实现搬进 `kit/lib/src/ui/components/`。
 > 清单见 [`FLUTTER_MIGRATION.md`](../FLUTTER_MIGRATION.md)。
 
@@ -323,16 +323,30 @@
 
 ## 7. 反馈组件
 
-### 7.1 Toast/Snackbar
+### 7.1 提示条
 
 ```dart
 // kit/lib/src/ui/components/feedback.dart
-  const AppSnackbar({
+  enum NoticeSeverity { info, success, warning, error }
+
+  const AppNotice({
     super.key,
     required this.message,
-    required this.isSuccess,
+    this.severity = NoticeSeverity.info,
+    this.floating = false,
+  });
+
+  // 浮动弹一条（走 ScaffoldMessenger）
+  void showAppNotice(
+    BuildContext context, {
+    required String message,
+    NoticeSeverity severity = NoticeSeverity.info,
   });
 ```
+
+级别 → 配色：`info` 用 `secondaryContainer`，`error` 用 `errorContainer`，
+`success` / `warning` 用扩展色的 `successContainer` / `warningContainer`
+（配套新增了 `onSuccessContainer` / `onWarningContainer`，保证文字 ≥4.5:1）。
 
 ### 7.2 加载指示器
 
@@ -355,7 +369,7 @@
 
 > **未迁到 Flutter**：FloatingToolbar（悬浮工具栏）+ ToolbarIconButton
 >
-> KMP 备份在仓库外 `kmp-legacy-backup/`，本仓库不维护。
+> 旧实现备份在仓库外 `kmp-legacy-backup/`，本仓库不维护。
 > 真的要这个组件，从备份里挑实现搬进 `kit/lib/src/ui/components/`。
 > 清单见 [`FLUTTER_MIGRATION.md`](../FLUTTER_MIGRATION.md)。
 
@@ -415,61 +429,62 @@
 
 ### 11.1 Duration（M3 标准值）
 
+常量都在 `M3Motion` 里（`kit/lib/src/theme/motion.dart`），Dart 侧是 `static const`。
+
 | Token | 值 | 用途 |
 |---|---|---|
-| `SHORT1` | 50ms | 选中 / 取消选中 |
-| `SHORT2` | 100ms | 简单状态切换 |
-| `SHORT3` | 150ms | 小组件出现 |
-| `SHORT4` | 200ms | 标准交互 |
-| `MEDIUM1` | 250ms | 面板展开 |
-| `MEDIUM2` | 300ms | 标准转场 |
-| `MEDIUM3` | 350ms | 复杂转场 |
-| `MEDIUM4` | 400ms | 全屏转场（启动页） |
-| `LONG1` | 450ms | 强调动画 |
-| `LONG2` | 500ms | 复杂强调 |
-| `EXIT_FADE` | 90ms | 转场退场淡出（必须比位移快） |
-| `FADE_THROUGH_IN` | 210ms | Fade Through 进场（叠 90ms 退场 = 300ms） |
-| `FADE_THROUGH_INITIAL_SCALE` | 0.92 | Fade Through 进场初始缩放 |
-| `SHARED_AXIS_OFFSET` | 30dp | Shared Axis X 位移量（不是整屏宽度） |
-| `FLOAT_INITIAL_SCALE` | 0.8 | 浮层从锚点长出的初始缩放 |
+| `M3Motion.short1` | 50ms | 选中 / 取消选中 |
+| `M3Motion.short2` | 100ms | 简单状态切换 |
+| `M3Motion.short3` | 150ms | 小组件出现 |
+| `M3Motion.short4` | 200ms | 标准交互 |
+| `M3Motion.medium1` | 250ms | 面板展开 |
+| `M3Motion.medium2` | 300ms | 标准转场 |
+| `M3Motion.medium3` | 350ms | 复杂转场 |
+| `M3Motion.medium4` | 400ms | 全屏转场（启动页） |
+| `M3Motion.long1` | 450ms | 强调动画 |
+| `M3Motion.long2` | 500ms | 复杂强调 |
+| `M3Motion.exitFade` | 90ms | 转场退场淡出（必须比位移快） |
+| `M3Motion.fadeThroughIn` | 210ms | Fade Through 进场（叠 90ms 退场 = 300ms） |
+| `M3Motion.fadeThrough` | 300ms | Fade Through 全程（退场 + 进场） |
+| `M3Motion.fadeThroughInitialScale` | 0.92 | Fade Through 进场初始缩放 |
 
 ### 11.2 Easing
 
+曲线也是 `M3Motion` 里的 `static const Curve`。
+
 | Token | 曲线 | 用途 |
 |---|---|---|
-| `emphasized` | cubic-bezier(0.2, 0, 0, 1) | 强调 |
-| `emphasizedDecelerate` | cubic-bezier(0.05, 0.7, 0.1, 1) | 进场 |
-| `emphasizedAccelerate` | cubic-bezier(0.3, 0, 0.8, 0.15) | 退场 |
+| `M3Motion.emphasized` | cubic-bezier(0.2, 0, 0, 1) | 强调 |
+| `M3Motion.emphasizedDecelerate` | cubic-bezier(0.05, 0.7, 0.1, 1) | 进场 |
+| `M3Motion.emphasizedAccelerate` | cubic-bezier(0.3, 0, 0.8, 0.15) | 退场 |
 
-### 11.3 Spring
+### 11.3 辅助函数
 
-| Token | damping / stiffness | 用途 |
-|---|---|---|
-| `fastSpatial()` | 0.9 / 1400 | 跟手位移、尺寸 |
-| `defaultSpatial()` | 0.9 / 700 | 常态位移、尺寸 |
-| `expressiveSpatial()` | 0.6 / 800 | 庆祝 / 强调回弹（唯一允许过冲的一档，别用于常态位移） |
-| `fastEffects()` | 1.0 / 3800 | 颜色、透明度（不过冲） |
-| `defaultEffects()` | 1.0 / 1600 | 同上，常态 |
-| `itemPlacement()` | 1.0 / 400 | 列表条目换位（不过冲，项不会互相压过） |
-| `pagerScroll()` | tween MEDIUM2 + 强调减速 | Pager 程序化翻页（只用于相邻页） |
+| 函数 | 作用 |
+|---|---|
+| `motionDuration(context, d)` | 系统关了动画时返回 `Duration.zero`，否则原样返回 |
+| `directedCurve(parent, forward, reverse)` | 按方向换曲线（进场减速、退场加速） |
+| `tweened(parent, begin, end, curve)` | 少写一层 `Tween` + `CurvedAnimation` |
+| `lerp(a, b, t)` | 数值插值 |
 
-### 11.4 页面级转场
+### 11.4 组件级转场
 
-组件内部用 `M3Motion`，**整页之间**用 `kit/lib/src/theme/motion.dart` 的转场曲线：
+底座**不内置路由**，转场只有两个现成组件（`kit/lib/src/ui/components/motion.dart`）：
 
 | 场景 | 用什么 |
 |---|---|
-| 同层级、无空间关系（设置页、一级页面） | `M3Motion.fadeThrough()`（`AnimatedContent` 里）或 `NavTransitions.fadeThroughIn/Out()` |
-| 层级推进 / 返回（列表 → 详情） | `NavTransitions.sharedAxisIn/Out/PopIn/PopOut(offsetPx)`，`offsetPx` 取 `sharedAxisOffsetPx()` |
+| 展开 / 收起 | `CollapsibleSection` —— 高度撑开 + 淡入，收起时反向 |
+| 同位置内容整体替换（无关联） | `AnimatedContentSwitch` —— Fade Through：90ms 淡出 + 210ms 淡入并从 92% 放大 |
+| 层级推进 / 返回（列表 → 详情） | 底座不管路由 —— app 自己写 `PageRouteBuilder`，位移量取 `M3Motion.medium2` |
 
 ### 11.5 减动效
 
-系统「移除动画」（开发者选项 → 动画时长缩放 = 0）命中时，**所有** spec 退化为 `snap()`、
-所有转场退化为 `None`：
+系统「移除动画」命中时，**所有**动画退化为「直接跳到终态」：
 
-- `AppTheme(reducedMotion = …)` 注入 `LocalReducedMotion`，`M3Motion` 内部自动判断；
-- `NavTransitions` 的函数不是 `@Composable`（navigation 的转场 lambda 读不到 CompositionLocal），
-  减动效由调用侧显式传 `reducedMotion`。
+- `AppTheme(reducedMotion: true)` / `KitApp(reducedMotion: true)` 注入开关；
+- 读法：`KitTheme.reducedMotionOf(context)`（`kit/lib/src/theme/kit_theme.dart`）；
+- `motionDuration(context, d)` 在开关打开时返回 `Duration.zero`；
+- `CollapsibleSection` / `AnimatedContentSwitch` 内部已经判断，不用自己写分支。
 
 
 ---
@@ -501,7 +516,7 @@
 | `KitFilterChip` | `kit/lib/src/ui/components/chips.dart` |
 | `TagText` | `kit/lib/src/ui/components/tag_text.dart` |
 | `IllustratedEmptyState` | `kit/lib/src/ui/components/empty_state.dart` |
-| `AppSnackbar` | `kit/lib/src/ui/components/feedback.dart` |
+| `AppNotice` / `NoticeSeverity` | `kit/lib/src/ui/components/feedback.dart` |
 | `StatItem` | `kit/lib/src/ui/components/stats.dart` |
 | `PrimaryButton` / `SecondaryButton` / `FilledIconButton` / `TextActionButton` | `kit/lib/src/ui/components/buttons.dart` |
 | `AppCard` / `SmallCard` | `kit/lib/src/ui/components/cards.dart` |

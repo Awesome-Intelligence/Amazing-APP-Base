@@ -1,105 +1,65 @@
-# Flutter 迁移清单（KMP → Flutter，2026-11-16）
+# 未迁组件清单 —— 哪些组件故意没做、为什么
 
-原 KMP（Kotlin + Compose Multiplatform）实现在仓库外 `E:/Awesome Intelligence/kmp-legacy-backup/`，
-**不再演进**。这份文档记两件事：迁了什么、**没迁什么**。
+底座是一套 **通用**的 Flutter 组件库。清单里这些组件**不是忘了做，是判断过不值得做**。
+真要用，从旧实现备份（仓库外 `E:/Awesome Intelligence/kmp-legacy-backup/`）里挑实现，
+按本文最后一节的步骤搬进 `kit/lib/src/ui/components/` —— 别把旧工程整个拉回来。
 
-没迁的组件不是「忘了」，是**判断过不值得**。真要用，从备份里挑实现搬进
-`kit/lib/src/ui/components/`，别把整个 KMP 树拉回来。
+分组：**A 组**是业务组件（有价值但绑业务/素材），**B 组**是风格专属（已被 token 体系取代，
+**不要**搬），**C 组**是平台相关，**D 组**是部分被取代。
 
 ---
 
-## 一、底座包对照
+## A 组：业务组件（想要就搬）
 
-| KMP 模块 | Flutter 包 | 状态 |
+| 组件 | 里面有什么 | 为什么没做 |
 |---|---|---|
-| `:kit` | `kit/`（`kit.dart` / `kit_io.dart` / `kit_ui.dart` 三入口） | ✅ 迁完 |
-| `:kit-agent-koog` | `kit-agent/`（契约不变，运行时换成 `dart_agent_core`） | ✅ 迁完 |
-| `:kit-membership` | `kit-membership/` | ✅ 迁完 |
-| `chat-demo` | `chat-demo/` | ✅ 迁完（`--fake` 假运行时） |
-| `apps-demo` | `apps/demo/` | ✅ 迁完 |
-| 组件目录页（`ComponentGallery` / `ShowcaseCatalog`） | `apps/demo/lib/gallery_page.dart` | ✅ 迁完 |
+| AI 视觉组件 | 动作按钮 / 洞察卡 / 加载骨架 / 建议徽章与卡片 / 呼吸图标 / 目标 AI 按钮 | AI 相关的视觉件，自带插画与呼吸动效，**依赖旧插画资源**，整组搬过来要重做素材 |
+| 筛选底部弹窗 | 底部弹窗壳 + 日期区间 / 心情 / 重要度 / 多选 / 单选 / 标签等维度 | 筛选**芯片**已迁（`chips.dart` 的 `KitFilterChip`），只差弹窗壳 + 业务维度 |
+| 通知面板 | 通知按钮 + 面板（空态 / 行） | **底座已有一半**：`notification.dart`（`AppNotification` / `NotificationStore`）+ `AppNotificationList`（站内消息，无平台推送）。**系统通知按钮与推送仍归 app 层**（FCM / 本地通知是平台接口，见 `rules/KIT-NOTES.md` 〇.k）—— 已在 `apps/demo` 接 `flutter_local_notifications`（弹系统通知）+ `firebase_messaging`（后台推送）+ ntfy（纯 HTTP 传输，客户端在 `kit`） |
+| Markdown 编辑器 | 编辑器 + 预览 | Flutter 侧有富文本/编辑器依赖可选，底座不绑第三方 Markdown 方案 |
+| 滚动收缩页头 | 滚动时收缩的标题 + 标题预览 | **部分能力已有**：`components/motion.dart` 的 `CollapsibleSection`（折叠）+ `header.dart` 的 `Header`，但没有「滚动时收缩标题」那种联动 |
+| 打卡热力卡 | 热力格 + 统计 chip | 纯业务（打卡）组件，`kit` 不该知道「打卡」是什么 |
+| 横向日期条 | 一行日期格 | 已有 `calendar.dart`（月视图日历），横向条是另一种交互，真要用再写 |
+| Markdown 工具条 | 加粗/斜体等按钮 + 分隔 | 跟编辑器一起走 |
+| 标签选择弹窗 | 标签选择底部弹窗 | **标签芯片已迁**（`chips.dart` 的 `AddTagChip` / `SelectableTag`），只差弹窗壳 |
 
-依赖方向（`scripts/verify_layers.py` 盯着）：
-`apps/* → kit → kit-agent / kit-membership`，底座不许反依赖 app。
+> 判断标准：只有「app 一上来就要用」才值得现在搬。
 
 ---
 
-## 二、**没迁**的组件（9 组）
+## B 组：风格专属组件（token 体系已取代，**故意不做**）
 
-按「要不要」排序。A 组是真有价值的业务组件，B 组是风格专属（已被 token 体系取代），
-C 组是平台相关，D 组是部分被替代。
-
-### A 组：业务组件（想要就搬）
-
-| 组件 | KMP 行数 | 里面有什么 | 现状 |
-|---|---|---|---|
-| `AIComponents.kt` | 615 | `AIActionButton` / `AIInsightCard` / `AILoadingSkeleton` / `AISuggestionBadge` / `AISuggestionChip` / `AISuggestionItem` / `BreathingIcon` / `GoalAIButton` | 未迁。AI 相关的视觉件，自带插画与呼吸动效，**依赖旧插画资源**，整组搬过来要重做素材 |
-| `FilterBottomSheet.kt` | 524 | `FilterBottomSheet` / `DateRangeFilter` / `MoodFilterChips` / `ImportanceFilterChips` / `MultiSelectFilterChips` / `SingleSelectFilterChips` / `TagFilterChips` / `FilterSection` | 未迁。筛选**芯片**组件已迁（`chips.dart` 的 `KitFilterChip`），只差底部弹窗壳 + 业务维度 |
-| `NotificationsButton.kt` | 412 | `NotificationsButton` + 通知面板（空态 / 行） | 未迁。纯业务列表壳，底座没有通知数据模型，app 自己写更合适 |
-| `MarkdownEditor.kt` | 420 | `MarkdownEditor` / `MarkdownPreview` | 未迁。Flutter 侧已有富文本/编辑器依赖可选，底座不绑第三方 Markdown 方案 |
-| `CollapsingHeader.kt` | 371 | `CollapsingHeader` / `HeaderTitlePreview` | 未迁。**部分能力有**：`kit/lib/src/ui/components/motion.dart` 的 `CollapsibleSection`（折叠） + `header.dart` 的 `Header`，但没有「滚动时收缩标题」那种联动 |
-| `CheckinHeatmapCard.kt` | 363 | `CheckinHeatmapCard` + 热力格 + 统计 chip | 未迁。纯业务（打卡）组件，`kit` 不该知道「打卡」是什么 |
-| `HorizontalDateBar.kt` | 294 | `HorizontalDateBar` + 日期格 | 未迁。已有 `calendar.dart`（月视图日历），横向条是另一种交互，真要用再写 |
-| `MarkdownToolbar.kt` | 278 | `MarkdownToolbar` + 分隔 + 图标按钮 | 未迁。同上，跟编辑器一起走 |
-| `TagPickerBottomSheet.kt` | 265 | `TagPickerBottomSheet` | 未迁。**标签芯片已迁**（`chips.dart` 的 `AddTagChip` / `SelectableTag`），只差弹窗壳 |
-
-> 这 9 组加一起约 **3500 行 Kotlin**。共同点：要么绑死业务语义（打卡 / 通知），
-> 要么绑死旧素材（插画），要么有现成的 Flutter 第三方方案。
-> **判断标准**：只有「app 一上来就要用」才值得现在搬。
-
-### B 组：风格专属组件（token 体系已取代，**故意不迁**）
-
-| 文件 | 行数 |
-|---|---|
-| `EInkComponents.kt` | 439 |
-| `MacOSComponents.kt` | 412 |
-| `NotionComponents.kt` | 285 |
-| `SwissComponents.kt` | 269 |
-| `SwissLayout.kt` | 136 |
-
-KMP 版是「每种风格一组组件」（同一件事写 4 遍）。Flutter 版改成 **token 驱动**：
+早期是「每种风格一组组件」（同一件事写 4 遍）。现在是 **token 驱动**：
 一套组件 + 5 套 `ThemeTokens`（Mono / Swiss / Notion / EInk / macOS），
 `KitTheme.of(context)` 取当前 tokens。加风格 = 加一套 tokens，不用再写一遍组件。
 
-**不要把这几个文件搬回来** —— 搬回来就等于退回「每套风格一组组件」的老路。
-
-### C 组：平台相关
-
-| 组件 | 行数 | 说明 |
-|---|---|---|
-| `SpeechInput.kt`（Android only） | 86 | 系统语音输入。Flutter 端 `ComposerField` 的麦克风按钮留了接口，demo 里点它提示「语音输入暂未接入」—— 真接的时候用 `speech_to_text` 之类的插件，**不要**把 Android 专属实现硬搬 |
-| `SafStorageEngine.kt`（Android only） | 231 | Storage Access Framework 存储。Flutter 侧 `kit_io.dart` 的 `FileEntityStore` 走普通文件路径；需要 SAF 就走插件 |
-
-### D 组：部分被替代
-
-| 组件 | 行数 | Flutter 侧对应 |
-|---|---|---|
-| `AvatarHero.kt` | 122 | `kit/lib/src/ui/components/avatar.dart` 的 `UserAvatar` / `AvatarStack` / `ExpandedAvatarRow` 覆盖了绝大部分；「大图 hero」那种展示没搬 |
-| `ContactAvatarItem.kt` | 94 | 同文件的 `ContactItem` |
-| `DateExt.kt` / `DateFormatting.kt` | — | `kit/lib/src/ui/format/date_display.dart` |
-| `NavTransitions.kt` | — | `kit/lib/src/ui/components/motion.dart` 的 `AnimatedContentSwitch` |
+**不要把这些搬回来** —— 搬回来就等于退回「每套风格一组组件」的老路。
 
 ---
 
-## 三、迁了但**改名/换形态**的（找代码时看这里）
+## C 组：平台相关
 
-| KMP | Flutter | 备注 |
-|---|---|---|
-| `FilterChip` | `KitFilterChip` | 加 `Kit` 前缀避开 Material 同名 |
-| `AppIconButton` | `FilledIconButton` | Material 图标按钮，Flutter 版用 `IconData` 而不是内容 lambda |
-| `Tag` | `TagText` | 另有 `SelectableTag` / `AddTagChip` |
-| `MenuItem` / `MenuButton` | `SimpleMenuItem` / `SimpleMenuButton` | 另有 `ActionMenuRow` |
-| `Card` / `SmallCard` | `AppCard` / `SmallCard` | `Card` 跟 Flutter 内置类撞名 |
-| `RecordCard` | — | 未迁，见 A 组 |
-| `AppTheme` | `AppTheme`（`kit/lib/src/theme/app_theme.dart`） | 现在带 `ThemeStyle` + `tokens`，5 套风格走同一入口 |
-
-组件规范见 `rules/COMPONENT_SPEC.md`（里面的代码示例已全部换成 Flutter 实现的真签名）。
+| 组件 | 说明 |
+|---|---|
+| 系统语音输入 | Flutter 侧 `ComposerField` 的麦克风按钮留了接口，demo 里点它提示「语音输入暂未接入」—— 真接的时候用 `speech_to_text` 之类的插件，**不要**把平台专属实现硬搬 |
+| 系统文件选择器（SAF） | Flutter 侧 `kit_io.dart` 的 `FileEntityStore` 走普通文件路径；需要 SAF 就走插件 |
 
 ---
 
-## 四、搬一个组件回来要做什么
+## D 组：部分被取代
 
-1. 从 `kmp-legacy-backup/` 的 `.kt` 里读懂**行为**（不是抄代码），
+| 旧组件 | 现在的对应物 |
+|---|---|
+| 大图头像 | `components/avatar.dart` 的 `UserAvatar` / `AvatarStack` / `ExpandedAvatarRow` 覆盖了绝大部分；「大图 hero」那种展示没搬 |
+| 联系人头像条目 | 同文件的 `ContactItem` |
+| 日期扩展 / 日期格式化 | `ui/format/date_display.dart` |
+| 页面转场 | `components/motion.dart` 的 `AnimatedContentSwitch` |
+
+---
+
+## 搬一个组件回来要做什么
+
+1. 从旧实现备份里读懂**行为**（不是抄代码），
 2. 在 `kit/lib/src/ui/components/` 写 Dart widget，样式全部走 `KitTheme.of(context)` 取 tokens，
 3. 导出到 `kit/lib/kit_ui.dart`，
 4. 补一个 widget 测试（`kit/test/`），

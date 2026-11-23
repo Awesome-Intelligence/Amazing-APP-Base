@@ -196,19 +196,19 @@
 
 ### 下拉菜单 (Dropdowns)
 
-| 属性 | 说明 |
+| 组件 | 说明 |
 |------|------|
 | 触发器 | OutlinedTextField，12dp 圆角，56dp 高 |
-| 菜单 | 默认 M3 DropdownMenu |
-| 选项 | Check icon（selectedLeadingIcon）+ Text，垂直排列 |
-| 选中指示器 | M3 标准：选中项显示 `Icons.Filled.Check`，使用 `SelectableDropdownMenuItem` 或 `DropdownMenuItem` 配合 `leadingIcon` |
+| 菜单 | M3 `DropdownMenu`（底座封装成 `SelectDropdown`） |
+| 选项 | 选中项左侧一个 `Icons.check` + 标签，垂直排列 |
+| 选中指示器 | 不用 `DropdownMenuItem.selectedLeadingIcon` —— 底座在 item 的 child 里手画勾 |
 
 ### 菜单 (Menu)
 
 | 属性 | 说明 |
 |------|------|
 | 触发按钮 | 40×40dp，20dp 圆角 |
-| 菜单 | M3 DropdownMenu |
+| 菜单 | M3 `MenuAnchor`（底座封装成 `SimpleMenuButton`，子菜单是真嵌套浮层） |
 
 ### 空状态 (EmptyState)
 
@@ -223,7 +223,7 @@
 
 | 组件 | 圆角 | 说明 |
 |------|------|------|
-| AppSnackbar | 28dp | inverseSurface 背景 |
+| AppNotice | shapes.small（M3 8dp） | 提示条；内联用级别容器色，浮动用 inverseSurface |
 | LoadingIndicator | — | 48dp，4dp 边框 |
 | LoadingOverlay | — | scrim 30% 遮罩 |
 
@@ -248,29 +248,25 @@
 
 ## 动效 (Animations)
 
-所有动效一律走 `kit/lib/src/theme/motion.dart` 的 `M3Motion` 令牌（时长 / Easing / Curve 全在里面），不要在页面里手写 tween/spring 参数。下表只列选型：
+所有动效一律走 `kit/lib/src/theme/motion.dart` 的 `M3Motion` 令牌（时长 / 曲线全在里面），不要在页面里手写 `Duration` / `Curve` 字面量。下表只列选型：
 
 | 场景 | 用什么 |
 |------|--------|
-| 位置 / 尺寸移动 | `M3Motion.fastSpatial()`（跟手）或 `defaultSpatial()`（常态） |
-| 庆祝 / 强调回弹（收藏点亮、完成） | `M3Motion.expressiveSpatial()` —— **唯一**允许过冲的一档，别用于常态位移 |
-| 颜色 / 透明度 | `M3Motion.fastEffects()` 或 `defaultEffects()` |
-| 展开 / 收起 | `M3Motion.expandSection()` / `collapseSection()` |
-| 出现 / 消失 | `M3Motion.appear()` / `disappear()` |
-| 内容整体替换（无关联） | `M3Motion.fadeThrough()` |
-| **整页替换**（设置页、一级页面） | `AnimatedContent(transitionSpec = { M3Motion.fadeThrough() })` |
-| **层级推进 / 返回**（列表 → 详情） | `PageRouteBuilder` + `AnimatedSwitcher`，位移量取 `M3Motion` 的 shared-axis 偏移（30dp，不是整屏） |
-| **接 navigation 库时** | NavHost 级用 `sharedAxis*` 做层级推进，同层级目的地用 `fadeThroughIn/Out()` 覆盖 |
-| 列表条目换位 / 删除 | `Modifier.animateItem(fadeInSpec = null, placementSpec = M3Motion.itemPlacement(), fadeOutSpec = M3Motion.fastEffects())` |
-| Pager 程序化翻页（点页签） | `M3Motion.pagerScroll()`（只用于相邻页，跨多页直接 `scrollToPage`） |
-| 加载脉动 | `rememberBreathingAlpha()` |
+| 颜色 / 透明度 | `M3Motion.short2`（100ms）+ `M3Motion.emphasized` |
+| 展开 / 收起 | `CollapsibleSection`（高度 `M3Motion.medium1`，淡入淡出 `M3Motion.short3`） |
+| 内容整体替换（无关联） | `AnimatedContentSwitch`（Fade Through：90ms 淡出 + 210ms 淡入，初始缩放 0.92） |
+| **整页替换**（设置页、一级页面） | `AnimatedContentSwitch` |
+| **层级推进 / 返回**（列表 → 详情） | app 自己写 `PageRouteBuilder`，位移量取 `M3Motion.medium2`（不是整屏） |
+| 加载脉动 | 骨架屏（`SkeletonRect` / `SkeletonTextLine` / …），呼吸脉动 1.1s 往复 |
+| 进场 / 退场曲线 | 进场 `M3Motion.emphasizedDecelerate`，退场 `M3Motion.emphasizedAccelerate` |
 
 ### Motion 原则
 - 进入：decelerate；退出：accelerate（M3 emphasized 系）
-- 退场必须比位移快（`EXIT_FADE = 90ms`），注意力才留在新页面
-- 面板类必须有退场动画（`MutableTransitionState` 翻转 targetState，退场播完再移除）
-- 遵循系统"减少动效"设置：`M3Motion` 的 spring 已自动退化为 snap，自写动画用 `LocalReducedMotion` 判断；
-  `NavTransitions` 的函数不是 @Composable（navigation lambda 里读不到 CompositionLocal），减动效由调用侧传 `reducedMotion`
+- 退场必须比位移快（`M3Motion.exitFade` = 90ms），注意力才留在新页面
+- 面板类必须有退场动画（`CollapsibleSection` 收起时先淡出再收高度）
+- 遵循系统「减少动效」设置：`KitTheme.reducedMotionOf(context)` 为真时，
+  `motionDuration(context, d)` 返回 `Duration.zero`，`CollapsibleSection` /
+  `AnimatedContentSwitch` 内部直接跳到终态 —— 自写动画要自己判断，别硬编码时长。
 
 ---
 
@@ -317,13 +313,16 @@
 - 优先使用 Outlined 风格图标
 
 ### 圆角值
-```kotlin
-8.dp   // Chips, Tags
-12.dp  // Buttons, Cards, Input
-16.dp  // Dialogs, FAB
-24.dp  // BottomNavigation 指示器
-28.dp  // SearchBar
+```dart
+8   // Chips, Tags
+12  // Buttons, Cards, Input
+16  // Dialogs, FAB
+24  // BottomNavigation 指示器
+28  // SearchBar
 ```
+
+> Flutter 里圆角是纯逻辑像素（`BorderRadius.circular(12)`），不用 dp。
+> 组件圆角统一从 `KitTheme.of(context)` 的 `tokens.shapes` 取，别手写数字。
 
 ---
 
@@ -378,23 +377,27 @@
 | 加载完成 | 恢复正常按钮状态 |
 | 失败 | 恢复按钮，允许重新提交 |
 
-```kotlin
-Button(
-    onClick = onClick,
-    enabled = !isLoading,
-    modifier = Modifier.height(48.dp),
-    shape = RoundedCornerShape(12.dp)
-) {
-    if (isLoading) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(16.dp),
-            strokeWidth = 2.dp,
-            color = MaterialTheme.colorScheme.onPrimary
-        )
-    } else {
-        Text(text = "提交")
-    }
-}
+底座的 `PrimaryButton` **没有** loading 参数 —— 要这个态就在 app 层包一层：
+
+```dart
+SizedBox(
+  height: 48,
+  child: FilledButton(
+    onPressed: isLoading ? null : onPressed,
+    style: FilledButton.styleFrom(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    child: isLoading
+        ? const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : const Text('提交'),
+  ),
+)
 ```
 
 ### Skeleton Loading（骨架屏）
@@ -407,8 +410,8 @@ Button(
 
 ### Pull-to-Refresh
 
-- 使用 Material3 `pullToRefresh` modifier
-- 指示器：CircularProgressIndicator 或自定义动画
+- 用 Flutter 的 `RefreshIndicator`
+- 指示器：`CircularProgressIndicator` 或自定义动画
 - 触发阈值：80dp 下拉
 
 ---
@@ -435,7 +438,7 @@ Success 状态 → 显示成功反馈（可选）
 
 | 级别 | 场景 | 组件 |
 |------|------|------|
-| Toast/Snackbar | 操作失败（可忽略）| AppSnackbar |
+| Toast/Snackbar | 操作失败（可忽略）| AppNotice(floating) |
 | Inline | 表单验证失败 | 字段下方错误文字 |
 | Dialog | 严重错误需确认 | ConfirmDialog |
 | Full Screen | 网络错误等 | EmptyState + 重试按钮 |
@@ -502,12 +505,25 @@ Success 状态 → 显示成功反馈（可选）
 
 ---
 
-## Banner / Toast
+## 提示条 (AppNotice)
 
-| 组件 | 圆角 | 背景 | 说明 |
+项目里**只有一种提示条**：`AppNotice`。级别（info / success / warning / error）
+由 `NoticeSeverity` 表达，图标 + 容器色一起变。
+
+| 形态 | 背景 | 文字/图标 | 说明 |
 |------|------|------|------|
-| Banner | 0dp | surface | 可内嵌操作 |
-| Toast/Snackbar | 28dp | inverseSurface | 轻量反馈 |
+| 内联（默认） | 级别容器色 | 级别 on*Container 色 | 直接插在页面里 |
+| 浮动（floating） | inverseSurface | onInverseSurface | M3 SnackBar 配色，级别只靠图标区分 |
+
+| 级别 | 容器色 | 前景色 | 图标 |
+|------|------|------|------|
+| info | secondaryContainer | onSecondaryContainer | info |
+| success | successContainer | onSuccessContainer | check_circle |
+| warning | warningContainer | onWarningContainer | warning_amber_rounded |
+| error | errorContainer | onErrorContainer | error |
+
+圆角一律 `shapes.small`（M3 8dp），别写死 28dp —— 圆角跟着主题走
+（Swiss/E-Ink 全直角、Notion 4dp、macOS 6dp）。
 
 ---
 

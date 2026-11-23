@@ -85,10 +85,10 @@ Google 官方这套 skill **没有**一份「M3 动效/令牌要求清单」：
 
 M3 动效要求的实际出处在本仓库自己这边：
 
-- `kit/src/commonMain/kotlin/com/androidkit/app/ui/theme/Motion.kt` 的 `M3Motion` —— Duration /
-  Easing / Spring 令牌，注释里写了出处是 **M3 官方站** `m3.material.io/styles/motion/easing-and-duration/spring-specs`
+- `kit/lib/src/theme/motion.dart` 的 `M3Motion` —— Duration / 曲线令牌，
+  出处是 **M3 官方站** `m3.material.io/styles/motion/easing-and-duration/spring-specs`
 - `rules/GOOGLE_STYLE.md` §动效 —— 落到代码的选型表
-- `rules/COMPONENT_SPEC.md` §11 —— 上面那套令牌的转录表（Duration / Easing / Spring / 页面级转场 / 减动效）
+- `rules/COMPONENT_SPEC.md` §11 —— 上面那套令牌的转录表（Duration / 曲线 / 组件级转场 / 减动效）
 
 > 组件尺寸不跟 M3 官方走 —— 本项目用的是 **Google 原生 App 风格**（按钮 48dp/12dp 等），
 > 见 `rules/GOOGLE_STYLE.md` §组件规范。动效跟 M3 官方，尺寸跟 Google 原生 App，两套口径别混。
@@ -109,7 +109,7 @@ M3 动效要求的实际出处在本仓库自己这边：
 
 没有现成 skill 再自己实现 —— 别重复造轮子。
 
-M3 相关的问题别翻 skill，直接查 `rules/GOOGLE_STYLE.md` / `rules/COMPONENT_SPEC.md` / `Motion.kt`。
+M3 相关的问题别翻 skill，直接查 `rules/GOOGLE_STYLE.md` / `rules/COMPONENT_SPEC.md` / `motion.dart`。
 
 ---
 

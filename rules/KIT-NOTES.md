@@ -2,10 +2,6 @@
 
 这份文档给**接手 kit 的人**看：知道边界在哪，比知道里面有什么更重要。
 
-> 2026-11-16 起，底座全量改成 **Flutter**（原 Kotlin/Compose 版备份在仓库外
-> `E:\Awesome Intelligence\kmp-legacy-backup\`，不再演进）。
-> 下面保留原 KMP 阶段的重要取舍理由（它们多数仍然成立），换成 Flutter 的说法。
-
 ---
 
 ## 〇、形状：pub workspace，五个包
@@ -28,7 +24,7 @@ pubspec.yaml（workspace 根）
 
 ## 〇.a 入口分层：`kit.dart` / `kit_io.dart` / `kit_ui.dart`
 
-Dart 没有 KMP 的 source set，用**分入口导出**达到同样的编译期隔离：
+Dart 没有 source set，用**分入口导出**做编译期隔离：
 
 | 入口 | 依赖 | 谁能用 |
 |---|---|---|
@@ -42,8 +38,7 @@ Dart 没有 KMP 的 source set，用**分入口导出**达到同样的编译期�
 
 ## 〇.b 主题：token 驱动，一套组件
 
-原 KMP 版每种风格各写一组组件（`SwissComponents` / `EInkComponents` / `MacOSComponents` /
-`NotionComponents`，约 1200 行）。Flutter 版**刻意不搬这套架构**：
+「每种风格各写一组组件」这条路**刻意不走**（同一件事要写四遍，越维护越歪）：
 
 - 只有一套组件，从 `KitTheme.of(context)` 取当前 tokens（颜色 / 扩展色 / 排版 / 圆角 / 标签色板）
 - 加一种风格 = 加一套 tokens（`theme_tokens.dart` 里一个工厂），不写新组件
@@ -53,9 +48,8 @@ Dart 没有 KMP 的 source set，用**分入口导出**达到同样的编译期�
 表达，表达不了的就退化。要恢复某个风格的真·专属组件时，把它作为可选组件放到 `ui/components/`，
 由 app 自己挑 —— 别塞回底座把所有风格都拖上。
 
-主题色值/排版/ColorScheme 是**脚本生成**的（`tool/gen_palettes.py` 等），不手抄：
-Kotlin 的 `lineHeight` 是绝对行高，Flutter `TextStyle.height` 是字号倍数，
-手抄一步就全歪。
+主题色值/排版/ColorScheme **不手抄**：整套值是一次性脚本换算过来的，改的时候
+照着现有值核对。注意 Flutter 的 `TextStyle.height` 是**字号倍数**，不是绝对行高。
 
 ## 〇.c 存储：引擎 + codec 两层
 
@@ -152,6 +146,14 @@ UI 侧 `UpdateDialog` 的强制更新**不可关闭**（`PopScope(canPop: false)
 底座不写平台接口（跳转商店、桌面快捷方式、通知、传感器）。理由：底座要给所有 app 用，
 一旦有平台代码就得为每个平台维护一份，且 fork 下游想换实现得改底座。
 
+例外只有一个，且不碰任何系统 API：**站内消息**（`AppNotification` / `NotificationStore` /
+`AppNotificationList`）——它只是 app 内部的数据模型和列表，真发系统通知（FCM / 本地通知）
+照样归 app 层。
+
+推送的**传输层**可以在底座（`NtfyClient` —— 纯 HTTP，不碰任何系统 API，和
+`HttpUpdateSource` / `GitHubReleaseSource` 一个性质）；**平台层**（`flutter_local_notifications`
+弹系统通知、`firebase_messaging` 收后台推送）留在 `apps/*`。分界线还是「有没有系统 API」。
+
 ## 〇.l Flutter 踩坑记录（改这块前先看）
 
 | 坑 | 现象 | 处理 |
@@ -164,7 +166,7 @@ UI 侧 `UpdateDialog` 的强制更新**不可关闭**（`PopScope(canPop: false)
 | `double.clamp()` 返回 `num` | 类型不匹配 | `.toDouble()` |
 | `showModalBottomSheet` 没有 `surfaceTintColor` | 参数不存在 | `elevation: 0` |
 | 无限动画让 `pumpAndSettle` 永远等不到静止 | 测试超时 | 用 `TickerMode(enabled:)` 停 ticker |
-| `IndexedStack` 一次构建所有页 | 骨架屏动画让测试挂 | 「访问过才构建」 |
+| `IndexedStack` 一次构建所有页 | 骨架屏动画让测试挂 | 换 `StatefulShellRoute.indexedStack`：没访问过的分支不构建，切走的分支 `Offstage` + ticker 停 |
 | Dart 的 `Duration` 是绝对时长 | 夏令时切换那天日期偏移 | 日期加减用 `DateTime(y, m, d + n)` |
 | `dart fix --apply` 会乱改 import | 一次性搞坏 5 个文件 | 别对全仓无脑跑 |
 | `node --test test/` 不认目录 | 0 个测试 | 用 glob：`node --test "test/*.test.js"` |
