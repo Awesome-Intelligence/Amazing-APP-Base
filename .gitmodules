@@ -6,3 +6,9 @@
 	path = skills/logo-design-skill
 	url = https://github.com/kaankiziltug/logo-design-skill.git
 	branch = main
+[submodule "skills/app-store-screenshots"]
+	path = skills/app-store-screenshots
+	url = https://github.com/Forks-Awesome-Intelligence/app-store-screenshots.git
+[submodule "skills/guizang-social-card-skill"]
+	path = skills/guizang-social-card-skill
+	url = https://github.com/Forks-Awesome-Intelligence/guizang-social-card-skill.git
