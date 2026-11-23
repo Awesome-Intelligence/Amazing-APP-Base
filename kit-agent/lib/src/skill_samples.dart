@@ -1,8 +1,6 @@
 import 'skill_definition.dart';
 
 /// 黄金样例：工具名 + 入参 JSON + 期望返回里的一段话。不调模型就能跑。
-/// 对应 KMP 的 `SkillSamples.runSamples()`。
-///
 /// 样例表跑的是**工具这一层**（工具名、入参、返回值），不调模型 —— 不花钱、不连网、结果稳定。
 class SkillSample {
   final String toolName;
@@ -19,7 +17,7 @@ final class SampleFailure {
   const SampleFailure(this.toolName, this.reason);
 }
 
-/// 跑黄金样例，返回所有失败。对应 KMP 的 `runSamples(...)`。
+/// 跑黄金样例，返回所有失败。
 Future<List<SampleFailure>> runSamples(
   SkillDefinition skill,
   List<SkillSample> samples,

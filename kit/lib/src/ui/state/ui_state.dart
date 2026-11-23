@@ -1,6 +1,4 @@
 /// 一次异步加载的 UI 状态 —— **底座只认这一套**。
-/// 对应 KMP 的 `ui/state/UiState.kt`。
-///
 /// 为什么要有它：底座会派生很多 app，如果每个页面各写一个 `XxxUiState`
 /// （`isLoading` / `data` / `error` 三个字段自己拼），分支处理和空态早晚分叉。
 /// 这里给一个四态密封类，页面 `switch` 一下就能穷举。
@@ -83,7 +81,7 @@ T orElseUiData<T>(UiState<T> state, T Function() fallback) =>
 /// 把一次异步调用包成 [UiState]。
 ///
 /// 只捕获 [Exception]：`Error`（编程错误）必须冒出去，否则会被当成"加载失败"
-/// 静默吞掉，bug 再也查不出来。KMP 版对应的是「CancellationException 原样抛」。
+/// 静默吞掉，bug 再也查不出来。
 ///
 /// 文案兜底交给调用方：`UiError.message` 可能为空，UI 补一句默认文案更合适。
 Future<UiState<T>> uiStateOf<T>(Future<T> Function() block) async {

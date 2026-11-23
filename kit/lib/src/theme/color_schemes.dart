@@ -1,8 +1,8 @@
-// ColorScheme（5 套风格 × 深浅）—— 迁移时由脚本从原 KMP 主题机械转换而来。
+// ColorScheme（5 套风格 × 深浅）。
 // 改色值请连同 palettes.dart 一起改，两边对不上会出「组件一个色、页面另一个色」。
-// 源：ui/theme/Theme.kt（10 套 ColorScheme）、ui/theme/*Color*.kt（标签色板）
+// 源：palettes.dart（色板 + 标签色板）
 //
-// 槽位映射：Compose 的 inverseOnSurface -> Flutter 的 onInverseSurface；
+// 槽位映射：inverseOnSurface -> onInverseSurface；
 // background / onBackground / surfaceVariant 在 Flutter 已废弃，
 // 但它们与 surface / onSurface / surfaceContainerHighest **取值不同**，
 // 所以单独放 ColorSchemeExtras，避免页面底色和卡片底色被抹平成同一个色。
@@ -13,7 +13,7 @@ import 'package:material_ui/material_ui.dart' show Brightness, ColorScheme;
 
 import 'palettes.dart';
 
-/// Flutter ColorScheme 已废弃、但 KMP 主题里独立取值的三项。
+/// Flutter ColorScheme 已废弃、但主题里独立取值的三项。
 class ColorSchemeExtras {
   const ColorSchemeExtras({
     required this.background,
@@ -21,17 +21,17 @@ class ColorSchemeExtras {
     required this.surfaceVariant,
   });
 
-  /// 页面底色（Compose `colorScheme.background`）。
+  /// 页面底色（对应 `colorScheme.background`）。
   final Color background;
 
   /// 页面底色上的文字色。
   final Color onBackground;
 
-  /// Compose 的 `surfaceVariant`（Flutter 建议改用 surfaceContainerHighest）。
+  /// `surfaceVariant`（Flutter 建议改用 surfaceContainerHighest）。
   final Color surfaceVariant;
 }
 
-/// Kotlin `LightColorScheme` 的等价物。
+/// 浅色配色方案。
 const ColorScheme monoLightScheme = ColorScheme(
   brightness: Brightness.light,
   primary: Mono.primaryLight,
@@ -75,7 +75,7 @@ const ColorSchemeExtras monoLightSchemeExtras = ColorSchemeExtras(
   surfaceVariant: Mono.surfaceVariantLight,
 );
 
-/// Kotlin `DarkColorScheme` 的等价物。
+/// 深色配色方案。
 const ColorScheme monoDarkScheme = ColorScheme(
   brightness: Brightness.dark,
   primary: Mono.primaryDark,
@@ -119,7 +119,7 @@ const ColorSchemeExtras monoDarkSchemeExtras = ColorSchemeExtras(
   surfaceVariant: Mono.surfaceVariantDark,
 );
 
-/// Kotlin `SwissLightColorScheme` 的等价物。
+/// Swiss 浅色配色方案。
 const ColorScheme swissLightColorScheme = ColorScheme(
   brightness: Brightness.light,
   primary: Swiss.primaryLight,
@@ -163,7 +163,7 @@ const ColorSchemeExtras swissLightColorSchemeExtras = ColorSchemeExtras(
   surfaceVariant: Swiss.surfaceVariantLight,
 );
 
-/// Kotlin `SwissDarkColorScheme` 的等价物。
+/// Swiss 深色配色方案。
 const ColorScheme swissDarkColorScheme = ColorScheme(
   brightness: Brightness.dark,
   primary: Swiss.primaryDark,
@@ -207,7 +207,7 @@ const ColorSchemeExtras swissDarkColorSchemeExtras = ColorSchemeExtras(
   surfaceVariant: Swiss.surfaceVariantDark,
 );
 
-/// Kotlin `NotionLightColorScheme` 的等价物。
+/// Notion 浅色配色方案。
 const ColorScheme notionLightColorScheme = ColorScheme(
   brightness: Brightness.light,
   primary: Notion.primaryLight,
@@ -251,7 +251,7 @@ const ColorSchemeExtras notionLightColorSchemeExtras = ColorSchemeExtras(
   surfaceVariant: Notion.surfaceVariantLight,
 );
 
-/// Kotlin `NotionDarkColorScheme` 的等价物。
+/// Notion 深色配色方案。
 const ColorScheme notionDarkColorScheme = ColorScheme(
   brightness: Brightness.dark,
   primary: Notion.primaryDark,
@@ -295,7 +295,7 @@ const ColorSchemeExtras notionDarkColorSchemeExtras = ColorSchemeExtras(
   surfaceVariant: Notion.surfaceVariantDark,
 );
 
-/// Kotlin `EInkLightColorScheme` 的等价物。
+/// E-Ink 浅色配色方案。
 const ColorScheme eInkLightColorScheme = ColorScheme(
   brightness: Brightness.light,
   primary: EInk.primaryLight,
@@ -339,7 +339,7 @@ const ColorSchemeExtras eInkLightColorSchemeExtras = ColorSchemeExtras(
   surfaceVariant: EInk.surfaceVariantLight,
 );
 
-/// Kotlin `EInkDarkColorScheme` 的等价物。
+/// E-Ink 深色配色方案。
 const ColorScheme eInkDarkColorScheme = ColorScheme(
   brightness: Brightness.dark,
   primary: EInk.primaryDark,
@@ -383,7 +383,7 @@ const ColorSchemeExtras eInkDarkColorSchemeExtras = ColorSchemeExtras(
   surfaceVariant: EInk.surfaceVariantDark,
 );
 
-/// Kotlin `MacOSDarkColorScheme` 的等价物。
+/// macOS 深色配色方案。
 const ColorScheme macOSDarkColorScheme = ColorScheme(
   brightness: Brightness.dark,
   primary: MacOS.primaryDark,
@@ -427,7 +427,7 @@ const ColorSchemeExtras macOSDarkColorSchemeExtras = ColorSchemeExtras(
   surfaceVariant: MacOS.surfaceVariantDark,
 );
 
-/// Kotlin `MacOSLightColorScheme` 的等价物。
+/// macOS 浅色配色方案。
 const ColorScheme macOSLightColorScheme = ColorScheme(
   brightness: Brightness.light,
   primary: MacOS.primaryLight,
@@ -472,7 +472,7 @@ const ColorSchemeExtras macOSLightColorSchemeExtras = ColorSchemeExtras(
 );
 
 // ── 标签色板（6 个核心色调）──────────────────────────────
-/// 色板键名顺序即 Kotlin `TagColorNames`，neutral 是默认色。
+/// 色板键名顺序即标签色板顺序，neutral 是默认色。
 const List<String> tagColorNames = <String>[
   'neutral',
   'rose',
@@ -482,7 +482,7 @@ const List<String> tagColorNames = <String>[
   'slate',
 ];
 
-/// Kotlin `LightTagColors` 的等价物。
+/// 浅色标签色板。
 const Map<String, Color> lightTagColors = <String, Color>{
   'neutral': Color(0xFF5A5A5A),
   'rose': Color(0xFFB87070),
@@ -492,7 +492,7 @@ const Map<String, Color> lightTagColors = <String, Color>{
   'slate': Color(0xFF6B7A8A),
 };
 
-/// Kotlin `DarkTagColors` 的等价物。
+/// 深色标签色板。
 const Map<String, Color> darkTagColors = <String, Color>{
   'neutral': Color(0xFFA0A0A0),
   'rose': Color(0xFFD0A0A0),
@@ -502,7 +502,7 @@ const Map<String, Color> darkTagColors = <String, Color>{
   'slate': Color(0xFFA0B8C8),
 };
 
-/// Kotlin `SwissLightTagColors` 的等价物。
+/// Swiss 浅色标签色板。
 const Map<String, Color> swissLightTagColors = <String, Color>{
   'neutral': Color(0xFF000000),
   'rose': Swiss.redInk,
@@ -512,7 +512,7 @@ const Map<String, Color> swissLightTagColors = <String, Color>{
   'slate': Color(0xFF0057B8),
 };
 
-/// Kotlin `SwissDarkTagColors` 的等价物。
+/// Swiss 深色标签色板。
 const Map<String, Color> swissDarkTagColors = <String, Color>{
   'neutral': Color(0xFFFFFFFF),
   'rose': Color(0xFFFF6B6B),
@@ -522,7 +522,7 @@ const Map<String, Color> swissDarkTagColors = <String, Color>{
   'slate': Color(0xFF7FB0F0),
 };
 
-/// Kotlin `NotionLightTagColors` 的等价物。
+/// Notion 浅色标签色板。
 const Map<String, Color> notionLightTagColors = <String, Color>{
   'neutral': Color(0xFF6B6A67),
   'rose': Color(0xFFB04A44),
@@ -532,7 +532,7 @@ const Map<String, Color> notionLightTagColors = <String, Color>{
   'slate': Color(0xFF1B6F96),
 };
 
-/// Kotlin `NotionDarkTagColors` 的等价物。
+/// Notion 深色标签色板。
 const Map<String, Color> notionDarkTagColors = <String, Color>{
   'neutral': Color(0xFFA8A6A3),
   'rose': Color(0xFFE08A84),
@@ -542,7 +542,7 @@ const Map<String, Color> notionDarkTagColors = <String, Color>{
   'slate': Color(0xFF6FB6DD),
 };
 
-/// Kotlin `EInkLightTagColors` 的等价物。
+/// E-Ink 浅色标签色板。
 const Map<String, Color> eInkLightTagColors = <String, Color>{
   'neutral': Color(0xFF555750),
   'rose': Color(0xFF5E5F57),
@@ -552,7 +552,7 @@ const Map<String, Color> eInkLightTagColors = <String, Color>{
   'slate': Color(0xFF828377),
 };
 
-/// Kotlin `EInkDarkTagColors` 的等价物。
+/// E-Ink 深色标签色板。
 const Map<String, Color> eInkDarkTagColors = <String, Color>{
   'neutral': Color(0xFFBAB9B0),
   'rose': Color(0xFFADACA2),
@@ -562,7 +562,7 @@ const Map<String, Color> eInkDarkTagColors = <String, Color>{
   'slate': Color(0xFF797870),
 };
 
-/// Kotlin `MacOSDarkTagColors` 的等价物。
+/// macOS 深色标签色板。
 const Map<String, Color> macOSDarkTagColors = <String, Color>{
   'neutral': Color(0xFFAEAEAE),
   'rose': Color(0xFFFF6961),
@@ -572,7 +572,7 @@ const Map<String, Color> macOSDarkTagColors = <String, Color>{
   'slate': Color(0xFF64D2FF),
 };
 
-/// Kotlin `MacOSLightTagColors` 的等价物。
+/// macOS 浅色标签色板。
 const Map<String, Color> macOSLightTagColors = <String, Color>{
   'neutral': Color(0xFF6E6E73),
   'rose': Color(0xFFD70015),

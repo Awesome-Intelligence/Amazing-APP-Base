@@ -60,7 +60,7 @@ double themedRadius(BuildContext context, double radius) {
   return tokens.cornerStyle == CornerStyle.square ? 0 : radius;
 }
 
-/// 圆形（或按主题风格的直角）—— 对应 KMP 的 `themedCircleShape()`。
+/// 圆形（或按主题风格的直角）。
 ///
 /// 日历的日期格、头像这类「本来就是圆」的元素用它：
 /// Swiss 这种直角风格下改成方形，否则整套主题里会剩几个圆点格格不入。

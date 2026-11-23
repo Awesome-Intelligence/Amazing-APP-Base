@@ -1,5 +1,5 @@
 name: kit_agent
-description: agent 运行时底座（dart_agent_core 封装），契约同构 KMP kit-agent-koog。
+description: agent 运行时底座（dart_agent_core 封装 + 网关客户端）。
 version: 0.1.0
 publish_to: none
 environment:

@@ -4,7 +4,7 @@ import 'package:flutter/painting.dart' show BorderRadius;
 
 /// 圆角风格：品牌主题解耦了「像素风」之后，圆角由 tokens 单独决定。
 ///
-/// 对应 KMP 的 `CornerStyle`。
+/// 圆角风格。
 enum CornerStyle {
   /// 跟随传入的半径（Mono 默认）。
   rounded,
@@ -13,7 +13,7 @@ enum CornerStyle {
   square,
 }
 
-/// 圆角桶（对应 Compose `Shapes` 的五个槽位）。
+/// 圆角桶（五个槽位）。
 ///
 /// 组件只按语义取（small/medium/large…），不写死数值 ——
 /// 写死就跟主题脱钩，换风格时那几处不变，看起来就是「半套主题」。

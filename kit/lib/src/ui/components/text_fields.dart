@@ -66,7 +66,7 @@ InputDecoration themedInputDecoration(
 /// 「清空输入框」这类操作只会改外部 state，屏幕上文字不动。）
 ///
 /// [singleLine] = false 时起手 3 行（不是 1 行），否则多行框会先挤成一条再跳高。
-/// [helperText] 在有 [isError] 时按错误色显示 —— 和 Compose 的 supportingText 一致。
+/// [helperText] 在有 [isError] 时按错误色显示。
 class SimpleTextField extends StatefulWidget {
   const SimpleTextField({
     super.key,

@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import 'kit_theme.dart';
 
-/// Material 3 动效令牌 —— 对应 KMP 的 `M3Motion`。
+/// Material 3 动效令牌。
 ///
 /// 用法：位置/尺寸变化走 [medium1] 一档的**时长** + [emphasizedDecelerate]；
 /// 颜色/透明度变化用更短的时长（[short2] / [short3]）。退场永远比进场快 ——

@@ -11,7 +11,7 @@ import 'typography_tokens.dart';
 
 /// 一套完整主题的「四轴 + 三个开关」。
 ///
-/// 对应 KMP 的 `ThemeTokens`。底座预置的 [monoThemeTokens] / [swissThemeTokens] 等
+/// 底座预置的 [monoThemeTokens] / [swissThemeTokens] 等
 /// 只是几套**预设**；App 要做自己的品牌，就在自己的模块里造一个 [ThemeTokens]，
 /// **不用改 kit**：
 ///
@@ -43,7 +43,7 @@ class ThemeTokens {
   /// Material 3 的颜色槽位。
   final ColorScheme colorScheme;
 
-  /// Flutter 已废弃、但 KMP 主题里独立取值的三项（页面底色等）。
+  /// Flutter 已废弃、但主题里独立取值的三项（页面底色等）。
   final ColorSchemeExtras extras;
 
   /// M3 之外的语义色（success / warning / aiAccent / star…）。
@@ -116,7 +116,7 @@ Map<String, Color> tagColorsFor(ThemeStyle style, bool isDark) => switch (style)
       ThemeStyle.mono => isDark ? darkTagColors : lightTagColors,
     };
 
-/// 按风格取预设 tokens。等价于 KMP 里 `when(style) { … }` 那段分发。
+/// 按风格取预设 tokens。
 ThemeTokens tokensFor(ThemeStyle style, bool isDark) => switch (style) {
       ThemeStyle.mono => monoThemeTokens(isDark),
       ThemeStyle.swiss => swissThemeTokens(isDark),

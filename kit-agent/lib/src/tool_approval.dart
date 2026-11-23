@@ -1,4 +1,4 @@
-/// 危险工具的审批闸门结果。对应 KMP 的 `ToolApproval`。
+/// 危险工具的审批闸门结果。
 sealed class ToolApproval {
   const ToolApproval();
 }
@@ -20,7 +20,7 @@ final class Deny extends ToolApproval {
   const Deny(this.reason);
 }
 
-/// 工具执行前的闸门。返回 [Deny] 时工具根本没跑（对应 KMP "执行前拦截"，不是 UI 弹提示）。
+/// 工具执行前的闸门。返回 [Deny] 时工具根本没跑（执行前拦截，不是 UI 弹提示）。
 ///
 /// 实现注意：闸门必须接在工具的真正执行前，而不是 UI 层。拒绝理由会作为工具结果
 /// 回到模型，模型据此改道。
@@ -29,7 +29,7 @@ abstract class ToolApprover {
   Future<ToolApproval> approve(String toolName, Map<String, Object?> args);
 }
 
-/// 全放行：只给"工具全是只读、无副作用"的 app 用。对应 KMP 的 `ToolApprover.AllowAll`。
+/// 全放行：只给"工具全是只读、无副作用"的 app 用。
 class AllowAllApprover implements ToolApprover {
   const AllowAllApprover();
 

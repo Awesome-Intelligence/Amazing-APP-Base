@@ -6,7 +6,7 @@ import '../../theme/kit_theme.dart';
 import '../components/buttons.dart';
 import '../components/cards.dart';
 
-/// 升级面板 —— 档位对比 + 购买 + 恢复购买。对应 KMP 的 `UpgradeSheet`。
+/// 升级面板 —— 档位对比 + 购买 + 恢复购买。
 ///
 /// 只管排版：档位名、价格、权益文案全由业务给的 [PlanOption] 决定，
 /// 买了哪一单通过 [onPurchase] 回调出去。**框架不碰支付通道** ——
@@ -147,8 +147,7 @@ class _PlanCard extends StatelessWidget {
             ),
           ),
           if (option.features.isNotEmpty) const SizedBox(height: 8),
-          // KMP 那版这里一条挨着一条（Compose Column 默认 0 间距），挤在一起
-          // 读起来很像一段话；给 6px 让每条权益自成一行。
+          // 权益一条挨着一条会挤成一段话；给 6px 让每条权益自成一行。
           for (final feature in option.features)
             Padding(
               padding: const EdgeInsets.only(bottom: 6),

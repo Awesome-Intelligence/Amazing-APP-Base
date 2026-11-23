@@ -5,8 +5,6 @@ import 'update_state.dart';
 import 'update_state_store.dart';
 
 /// 把 [UpdateState] 落到一个 JSON 文件（app 内部存储，移动端/桌面通用）。
-/// 对应 KMP 的 `data/update/FileUpdateStateStore.kt`。
-///
 /// 目录由调用方给（`getApplicationSupportDirectory()` / 测试用临时目录），
 /// 和 `FileEntityStore` 一个路子。读坏了就退回默认状态 ——
 /// 检查更新失败不该影响 app 启动。

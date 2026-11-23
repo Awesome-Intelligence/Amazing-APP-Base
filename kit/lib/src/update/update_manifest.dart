@@ -1,6 +1,4 @@
 /// 远端版本清单 —— “有没有新版本”的唯一数据契约。
-/// 对应 KMP 的 `data/update/UpdateManifest.kt`。
-///
 /// 自己托管一个静态 JSON 就行（CDN / GitHub Pages / 对象存储都可以），内容形如：
 /// ```json
 /// {

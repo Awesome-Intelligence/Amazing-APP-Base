@@ -6,7 +6,7 @@ import 'update_source.dart';
 import 'update_state.dart';
 import 'update_state_store.dart';
 
-/// “自动发现新版本”的唯一入口。对应 KMP 的 `data/update/UpdateChecker.kt`。
+/// “自动发现新版本”的唯一入口。
 ///
 /// 它只做三件事：**节流 → 拉清单 → 比版本**，不发通知、不弹窗、不下载 ——
 /// 那些是 UI 和 App 的决定（见 `UpdateDialog` 和 `apps/demo` 的 `UpdateGate`）。

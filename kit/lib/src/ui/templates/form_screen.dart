@@ -4,13 +4,12 @@ import '../../i18n/kit_strings.dart';
 import '../../theme/kit_theme.dart';
 import '../components/header.dart';
 
-/// 表单页模板 —— 新增 / 编辑的标准套路，对应 KMP 的 `FormScreen`。
+/// 表单页模板 —— 新增 / 编辑的标准套路。
 ///
 /// 页头只有两个动作：左边关闭（不保存）、右边保存。**不放删除** ——
 /// 删除是破坏性操作，塞在保存旁边最容易点错；该放页面内容区的底部。
 ///
-/// 和 KMP 的差别：那边是 `Scaffold(topBar = Header(...))`，这边只画一个
-/// [Column]。原因是 [Header] 自己已经吃了状态栏内边距、也铺了底色，
+/// 这里只画一个 [Column]。原因是 [Header] 自己已经吃了状态栏内边距、也铺了底色，
 /// 再套一层 Scaffold 会多出一层 Material 和一层底色，在带透明度的主题
 /// （macOS 毛玻璃）下会叠成两种颜色。外层仍建议由路由提供 Scaffold 承载
 /// SnackBar 和悬浮按钮。

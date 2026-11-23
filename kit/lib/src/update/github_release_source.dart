@@ -6,8 +6,6 @@ import 'update_manifest.dart';
 import 'update_source.dart';
 
 /// 直接读 GitHub Releases，适合开源项目：不用另建清单，发 Release 就等于发版本。
-/// 对应 KMP 的 `data/update/GitHubReleaseSource.kt`。
-///
 /// 用的是 `/repos/{owner}/{repo}/releases/latest` —— GitHub 的这个端点
 /// **只返回已发布、非预发布**的最新 Release。所以 release workflow 里的
 /// `draft: true` 草稿在手动发布前查不到，这是对的：草稿还没对外。

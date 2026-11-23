@@ -23,7 +23,7 @@ Widget kitDialogShell(BuildContext context, Widget child) {
 
 /// 确认弹窗 —— M3 规范，28 圆角、紧凑内边距。
 ///
-/// 用法（Flutter 是「把弹窗当成路由内容」而不是 Compose 的「条件渲染」）：
+/// 用法（弹窗当成路由内容推开，而不是靠条件渲染）：
 /// ```dart
 /// final ok = await ConfirmDialog.show(context, title: '…', message: '…');
 /// ```

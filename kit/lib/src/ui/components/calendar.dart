@@ -152,9 +152,8 @@ class _AppCalendarState extends State<AppCalendar> {
             switchOutCurve: Curves.easeInCubic,
             transitionBuilder: (child, animation) {
               if (noMotion) return child;
-              // Compose 版的 AnimatedContent 会区分「换视图（纯淡入）」和
-              // 「翻页（带方向的滑入）」。AnimatedSwitcher 的 builder 拿不到
-              // 前后状态，所以统一成「淡入 + 轻微横移」，翻页方向由 _forward 决定。
+              // AnimatedSwitcher 的 builder 拿不到前后状态，所以统一成
+              // 「淡入 + 轻微横移」，翻页方向由 _forward 决定。
               final begin = Offset(_forward ? 0.12 : -0.12, 0);
               return SlideTransition(
                 position: Tween<Offset>(begin: begin, end: Offset.zero)

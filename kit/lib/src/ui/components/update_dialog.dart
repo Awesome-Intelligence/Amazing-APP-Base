@@ -18,8 +18,6 @@ enum UpdateChoice {
 }
 
 /// 新版本提示弹窗 —— 只负责展示和回传用户的选择，不联网、不下载。
-/// 对应 KMP 的 `ui/components/UpdateDialog.kt`。
-///
 /// 数据来自 `AvailableResult`：
 /// - `mandatory = true`：强制更新。弹窗不可关闭（返回键/点外部都无效）、
 ///   没有“稍后/跳过”，只留一个更新按钮
@@ -28,8 +26,6 @@ enum UpdateChoice {
 ///
 /// “立即更新”做什么由 App 决定：Android 跳商店/浏览器、iOS 跳 App Store、
 /// Desktop 跳下载页、Web 开新标签。kit 不碰平台跳转 ——
-/// 和 KMP 版“不写 expect/actual”是同一条边界。
-///
 /// ```dart
 /// final choice = await UpdateDialog.show(
 ///   context,

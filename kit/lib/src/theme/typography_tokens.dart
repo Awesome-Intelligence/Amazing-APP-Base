@@ -1,13 +1,10 @@
-// 排版 tokens（5 套风格）—— 迁移时由脚本从原 KMP Type*.kt 转换而来。
-// 注意换算式：Compose 的 lineHeight 是绝对行高，Flutter TextStyle.height 是字号倍数
-// （height = lineHeight / fontSize）。手改时别照抄原值。
-// 源：kit/src/commonMain/kotlin/com/androidkit/app/ui/theme/Type*.kt
+// 排版 tokens（5 套风格）。
 //
-// Compose 的 lineHeight 是绝对行高，这里已换算成 Flutter 的 height 倍数（lineHeight/fontSize）。
+// height 是字号倍数（Flutter 的 TextStyle.height），不是绝对行高 —— 改排版时注意。
 
 import 'package:material_ui/material_ui.dart';
 
-/// Kotlin `Type` 的等价排版。
+/// Mono 排版。
 const TextTheme monoTextTheme = TextTheme(
   displayLarge: TextStyle(fontWeight: FontWeight.w400, height: 1.1228, fontSize: 57, letterSpacing: -0.25),
   displayMedium: TextStyle(fontWeight: FontWeight.w400, height: 1.1556, fontSize: 45, letterSpacing: 0),
@@ -26,7 +23,7 @@ const TextTheme monoTextTheme = TextTheme(
   labelSmall: TextStyle(fontWeight: FontWeight.w500, height: 1.4545, fontSize: 11, letterSpacing: 0.5),
 );
 
-/// Kotlin `TypeSwiss` 的等价排版。
+/// Swiss 排版。
 const TextTheme swissTextTheme = TextTheme(
   displayLarge: TextStyle(fontWeight: FontWeight.w700, height: 0.9773, fontSize: 88, letterSpacing: -2.64),
   displayMedium: TextStyle(fontWeight: FontWeight.w700, height: 1.0, fontSize: 56, letterSpacing: -1.12),
@@ -45,7 +42,7 @@ const TextTheme swissTextTheme = TextTheme(
   labelSmall: TextStyle(fontWeight: FontWeight.w700, height: 1.2727, fontSize: 11, letterSpacing: 0.88),
 );
 
-/// Kotlin `TypeNotion` 的等价排版。
+/// Notion 排版。
 const TextTheme notionTextTheme = TextTheme(
   displayLarge: TextStyle(fontWeight: FontWeight.w600, height: 1.1875, fontSize: 32, letterSpacing: -0.32),
   displayMedium: TextStyle(fontWeight: FontWeight.w600, height: 1.25, fontSize: 28, letterSpacing: -0.28),
@@ -64,7 +61,7 @@ const TextTheme notionTextTheme = TextTheme(
   labelSmall: TextStyle(fontWeight: FontWeight.w500, height: 1.4167, fontSize: 12, letterSpacing: 0.24),
 );
 
-/// Kotlin `TypeEInk` 的等价排版。
+/// E-Ink 排版。
 const TextTheme eInkTextTheme = TextTheme(
   displayLarge: TextStyle(fontWeight: FontWeight.w600, height: 1.1944, fontSize: 36, letterSpacing: -0.72),
   displayMedium: TextStyle(fontWeight: FontWeight.w600, height: 1.2857, fontSize: 28, letterSpacing: -0.28),
@@ -83,7 +80,7 @@ const TextTheme eInkTextTheme = TextTheme(
   labelSmall: TextStyle(fontWeight: FontWeight.w600, height: 1.3636, fontSize: 11, letterSpacing: 0.66),
 );
 
-/// Kotlin `TypeMacOS` 的等价排版。
+/// macOS 排版。
 const TextTheme macOSTextTheme = TextTheme(
   displayLarge: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'serif', height: 1.15, fontSize: 40, letterSpacing: -0.4),
   displayMedium: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'serif', height: 1.25, fontSize: 32, letterSpacing: 0),

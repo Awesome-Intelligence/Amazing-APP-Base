@@ -9,7 +9,7 @@ import '../tool_approval.dart';
 /// 后端网关运行时：agent loop 跑在 `backend/` 网关（TypeScript），客户端只收事件流。
 /// UI 用法与 local 完全一致（`createAgentRuntime(AgentMode.gateway, ...)`）。
 ///
-/// 协议复用 KMP 版 `kit-agent-koog` 的 `gateway/`：按 `skill.id` 调 `/v1/skills/<id>/invoke`，
+/// 网关协议：按 `skill.id` 调 `/v1/skills/<id>/invoke`，
 /// 按 `sessionId` 续接；网关手拆 SSE。
 class GatewayAgentRuntime implements AgentRuntime {
   final String baseUrl;

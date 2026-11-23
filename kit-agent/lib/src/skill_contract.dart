@@ -1,6 +1,6 @@
 import 'skill_definition.dart';
 
-/// skill 的静态体检。对应 KMP 的 `SkillContract.violations()`。
+/// skill 的静态体检。
 ///
 /// skill 化没有编译期保障，这是它的"类型检查"之一。app 单测里
 /// `assertTrue(violations(skill).isEmpty())`。

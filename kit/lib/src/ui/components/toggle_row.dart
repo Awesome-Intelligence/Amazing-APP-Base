@@ -7,8 +7,8 @@ import '../../theme/kit_theme.dart';
 /// [icon] / [subtitle] 可选 —— 传了就是「图标 + 标题 + 说明」的整行，
 /// 不传就是纯标题 + 开关。
 ///
-/// 与 KMP 版的一点差异：Compose 里 `Switch(onCheckedChange = null)` 会画成禁用色，
-/// Flutter 同理，所以这里把开关自己的 onChanged 也接上同一个回调 ——
+/// `Switch(onChanged: null)` 会画成禁用色，所以这里把开关自己的 onChanged
+/// 也接上同一个回调 ——
 /// 视觉上仍是「整行一个开关」，点开关本体和点行尾之外的地方效果一致。
 class ToggleRow extends StatelessWidget {
   const ToggleRow({

@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart' show TextEditingValue;
 
-/// 编辑器撤销/重做历史。对应 KMP 的 `ui/components/UndoHistory.kt`。
+/// 编辑器撤销/重做历史。
 ///
 /// 存的是「文本 + 光标」快照：撤销一步 = 回到上一份快照，光标也跟着回去。
 /// 连续输入在 [coalesceMs] 窗口内合并成一步（否则一次撤销只退一个字）。
@@ -97,8 +97,8 @@ class UndoHistory {
 
   /// 撤销一步，返回要回填的快照；没得撤返回 null。
   ///
-  /// KMP 版是传 `onApply` 回调，Dart 这里改成返回值 —— 调用方拿它直接
-  /// 赋给 `controller.value`，不用为了一个副作用多写一层闭包。
+  /// 返回值形式 —— 调用方拿它直接赋给 `controller.value`，
+  /// 不用为了一个副作用多写一层闭包。
   TextEditingValue? undo() {
     if (!canUndo) return null;
     _index--;

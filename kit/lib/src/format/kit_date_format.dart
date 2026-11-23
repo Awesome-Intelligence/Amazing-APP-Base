@@ -1,6 +1,6 @@
 import '../settings/app_language.dart';
 
-/// 迷你日期格式化器 —— 等价于 KMP 的 `KitDateFormat`。
+/// 迷你日期格式化器。
 ///
 /// 为什么不引 `intl`：kit 是被各 app fork 的底座，只用到寥寥几种日期格式，
 /// 引 intl 会带进一堆 locale 数据、还要初始化 `initializeDateFormatting`。

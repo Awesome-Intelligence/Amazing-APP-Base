@@ -10,8 +10,6 @@ import 'session.dart';
 /// 配置全走环境变量：ANTHROPIC_API_KEY（或 ANTHROPIC_AUTH_TOKEN）、ANTHROPIC_BASE_URL、ANTHROPIC_MODEL。
 /// 加 `--fake` 走本地假运行时：不联网、不花钱、不需要 key，用来验证 UI 和事件流。
 ///
-/// 对应 KMP `chat-demo/src/main/kotlin/com/androidkit/app/chat/Main.kt`。
-/// 入口。加 `--fake` 走本地假运行时：不联网、不花钱、不需要 key。
 void main(List<String> args) {
   final fake = args.contains('--fake');
   runApp(ChatDemoApp(fake: fake));

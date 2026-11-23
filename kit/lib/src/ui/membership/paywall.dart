@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../i18n/kit_strings.dart';
 import '../components/dialogs.dart';
 
-/// 额度用完的触发点 —— 对应 KMP 的 `QuotaReason`。
+/// 额度用完的触发点。
 enum QuotaReason {
   goal,
   contact,
@@ -60,7 +60,7 @@ class MembershipPaywall extends StatelessWidget {
   }
 }
 
-/// 额度用完的付费墙 —— 对应 KMP 的 `QuotaPaywall`。
+/// 额度用完的付费墙。
 ///
 /// 和 [MembershipPaywall] 的差别只有文案：这里的说明由 [reason] + [limit]
 /// 拼出来，调用方不用自己写「每天 5 次用完了」这种句子。

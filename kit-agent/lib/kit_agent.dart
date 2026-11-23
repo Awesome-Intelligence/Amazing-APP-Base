@@ -1,6 +1,6 @@
 /// agent_core —— Flutter 版的 agent 运行时底座。
 ///
-/// 契约与 KMP `kit-agent-koog` 同构：SkillDefinition / SkillTool / AgentRuntime /
+/// 核心契约：SkillDefinition / SkillTool / AgentRuntime /
 /// AgentEvent / ToolApprover / ChatLog / SkillContract / SkillSamples。
 /// 底层框架（dart_agent_core）的耦合集中在 `engine/`，便于换版本或换框架。
 export 'src/agent_event.dart';

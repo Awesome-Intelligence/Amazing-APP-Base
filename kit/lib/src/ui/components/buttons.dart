@@ -5,7 +5,7 @@ import '../../theme/kit_theme.dart';
 
 /// 主按钮 —— M3 实心按钮。高度 48，圆角走主题的 medium 桶。
 ///
-/// 对应 KMP 的 `PrimaryButton`。hover/press 只叠 state layer，不做位移 ——
+/// hover/press 只叠 state layer，不做位移 ——
 /// 这是 M3 的规矩，也是 Swiss 规范「不位移、不缩放」的要求。
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
@@ -106,7 +106,7 @@ class SecondaryButton extends StatelessWidget {
 
 /// 小号次级按钮 —— M3 Outlined 文字按钮，卡片内操作用。
 ///
-/// 对应 KMP 的 `SmallSecondaryButton`（工具审批卡的三个动作就是它）。
+/// 工具审批卡的三个动作就是它。
 class SmallSecondaryButton extends StatelessWidget {
   const SmallSecondaryButton({
     super.key,

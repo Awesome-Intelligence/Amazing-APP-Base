@@ -4,7 +4,7 @@ import 'tool_approval.dart';
 import 'engine/dart_agent_runtime.dart';
 import 'engine/gateway_agent_runtime.dart';
 
-/// agent 运行时的两种部署形态。对应 KMP 的 `AgentMode`。
+/// agent 运行时的两种部署形态。
 enum AgentMode {
   /// 本机 loop：dart_agent_core 跑在端上，模型走云端 API，工具默认跑在用户设备上。
   local,
@@ -13,13 +13,13 @@ enum AgentMode {
   gateway,
 }
 
-/// 契约：创建会话并收发事件流。对应 KMP 的 `AgentRuntime`。
+/// 契约：创建会话并收发事件流。
 abstract class AgentRuntime {
   /// 为某个 skill 建一个会话。[approver] 是危险工具的执行前闸门（可空）。
   AgentSession session(SkillDefinition skill, {ToolApprover? approver});
 }
 
-/// 一次会话：发送用户输入，得到 [AgentEvent] 流。对应 KMP 的 `AgentSession`。
+/// 一次会话：发送用户输入，得到 [AgentEvent] 流。
 abstract class AgentSession {
   /// 发送一句话，返回事件流（文本增量 / 工具调用 / 结果 / 错误）。
   Stream<AgentEvent> send(String input);

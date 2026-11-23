@@ -5,8 +5,7 @@ import '../../theme/kit_theme.dart';
 
 /// 线性进度条：高 8、圆角 4。
 ///
-/// 进度变化走补间动画；开了减动效就当场跳变（KMP 版是 `M3Motion.defaultSpatial()`
-/// 在减动效时返回 snap，这里等价处理）。
+/// 进度变化走补间动画；开了减动效就当场跳变。
 class LinearProgressBar extends StatelessWidget {
   const LinearProgressBar({
     super.key,

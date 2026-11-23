@@ -1,8 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
 /// 底部导航「已选中项再点一次」的联动：tick 变化时执行 [onScrollToTop]。
-/// 对应 KMP 的 `ui/components/ScrollToTop.kt`。
-///
 /// 首次组合不触发，只有 tick **变化**那一刻触发 —— 所以从别的 tab 切回来、
 /// 或者页面重建，都不会莫名其妙跳回顶部。调用方在 reselect 时对 tick 自增即可。
 ///
@@ -18,7 +16,7 @@ import 'package:material_ui/material_ui.dart';
 /// ```
 ///
 /// 这是个「副作用组件」，本身不占位置（渲染成零尺寸）。
-/// Compose 用 `remember` 比对 tick，Flutter 用 [State.didUpdateWidget] —— 同一件事。
+/// 用 [State.didUpdateWidget] 比对 tick。
 class ScrollToTopEffect extends StatefulWidget {
   const ScrollToTopEffect({
     super.key,
@@ -52,9 +50,7 @@ class _ScrollToTopEffectState extends State<ScrollToTopEffect> {
 
 /// [ScrollController] 的便利版：平滑回顶，系统开了「减少动效」就直接跳。
 ///
-/// 对应 KMP 的 `ScrollToTopEffect(tick, LazyListState)` 那几个重载 ——
-/// Compose 要区分 LazyList / LazyGrid / ScrollState，Flutter 的
-/// `ScrollController` 三者通用，所以只要一个。
+/// Flutter 的 `ScrollController` 列表 / 网格通用，所以只要一个。
 class ScrollToTopControllerEffect extends StatelessWidget {
   const ScrollToTopControllerEffect({
     super.key,

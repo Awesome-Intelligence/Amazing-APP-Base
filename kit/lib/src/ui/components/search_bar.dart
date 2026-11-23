@@ -112,8 +112,8 @@ class _KitSearchBarState extends State<KitSearchBar> {
               ),
             ),
           ),
-          // 清除 / 筛选按钮按需出现。KMP 版用了 AnimatedVisibility，
-          // 这里直接条件渲染：显隐会带动 Row 宽度变化，动画反而更抖。
+          // 清除 / 筛选按钮按需出现。这里直接条件渲染：显隐会带动 Row
+          // 宽度变化，动画反而更抖。
           if (widget.query.isNotEmpty)
             IconButton(
               onPressed: () => widget.onQueryChange(''),

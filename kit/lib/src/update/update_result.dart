@@ -1,7 +1,6 @@
 import 'update_manifest.dart';
 
 /// 一次版本检查的结果 —— UI 只认这几种，不需要接异常。
-/// 对应 KMP 的 `data/update/UpdateResult.kt`。
 sealed class UpdateResult {
   const UpdateResult();
 }

@@ -10,7 +10,7 @@ import '../components/header.dart';
 import '../components/motion.dart';
 import '../components/search_bar.dart';
 
-/// 列表页的三种呈现方式。对应 KMP 的 `ListViewMode`。
+/// 列表页的三种呈现方式。
 enum ListViewMode {
   /// 单列卡片（默认）。
   list,
@@ -24,7 +24,7 @@ enum ListViewMode {
 
 /// 列表页模板 —— 搜索 + 筛选 + 列表的标准套路。
 ///
-/// 对应 KMP 的 `ListScreen`。**所有列表页都按这个结构实现**，别自己拼页头。
+/// **所有列表页都按这个结构实现**，别自己拼页头。
 ///
 /// 用法（外面自带 `Scaffold`，模板自己会铺底色，中间不要再套容器）：
 /// ```dart
@@ -311,7 +311,7 @@ class KitListScreen<T> extends StatelessWidget {
   }
 }
 
-/// 列表条目数据模型 —— 对应 KMP 的 `ListItem`。
+/// 列表条目数据模型。
 @immutable
 class KitListItem {
   const KitListItem({
@@ -331,7 +331,7 @@ class KitListItem {
 
 /// 标准列表项卡片 —— 圆形首字母头像 + 标题/分类 + 可选紧急标记。
 ///
-/// 对应 KMP 的 `ListItemCard`。只是「最朴素的那种条目」，业务页可以照它改。
+/// 只是「最朴素的那种条目」，业务页可以照它改。
 class KitListItemCard extends StatelessWidget {
   const KitListItemCard({
     super.key,

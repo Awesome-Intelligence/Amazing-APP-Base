@@ -145,7 +145,7 @@ class _DartAgentSession implements AgentSession {
 ///
 /// [dac.AgentHook.beforeToolCall] 在工具真正执行前被调用：返回 `proceed()` 放行，
 /// 返回 `deny(reason:)` 则不执行，且理由会作为**错误工具结果**回给模型（让它改道）——这正
-/// 是 KMP 版"执行前拦截"闸门的语义，而不是 UI 上弹个提示就放行。
+/// 是"执行前拦截"闸门的语义，而不是 UI 上弹个提示就放行。
 class _ApprovalHook extends dac.AgentHook {
   final ToolApprover? approver;
   final List<SkillTool> tools;

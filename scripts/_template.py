@@ -26,10 +26,6 @@ def escape_xml(value: str) -> str:
     return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def escape_kotlin(value: str) -> str:
-    return value.replace("\\", "\\\\").replace('"', '\\"').replace("$", "\\$")
-
-
 def escape_json(value: str) -> str:
     """JSON / JS 字符串里能用。"""
     return value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")

@@ -6,10 +6,8 @@ import 'update_manifest.dart';
 import 'update_source.dart';
 
 /// 从静态 JSON 清单读版本信息（字段说明见 [UpdateManifest]）。
-/// 对应 KMP 的 `data/update/HttpUpdateSource.kt`。
-///
 /// [client] 由 App 提供，为什么不在 kit 里 new 一个：
-/// 超时策略、代理、UA 归 App 管 —— 和 KMP 版把 Ktor 引擎交给 App 挂是同一条边界。
+/// 超时策略、代理、UA 归 App 管。
 /// 需要自定义就看 `http` 包的 `IOClient` / `BrowserClient`。
 ///
 /// 注意：清单地址必须是 HTTPS。更新通道本身是攻击面 ——

@@ -5,8 +5,6 @@ import '../../theme/motion.dart';
 
 /// 可展开/收起的一块内容 —— 高度撑开 + 淡入，收起时同步收缩。
 ///
-/// 对应 KMP 的 `AnimatedVisibility(enter = M3Motion.expandSection())`。
-///
 /// 为什么不用 `AnimatedSize`：它只动「框的大小」，里面的内容在动画开始那一刻
 /// 就是全尺寸铺好的 —— 收缩时看起来像被裁掉，而不是"收起来"。这里用
 /// [SizeTransition] 驱动高度、[FadeTransition] 驱动透明度，两者共享一条
@@ -26,7 +24,7 @@ class CollapsibleSection extends StatefulWidget {
   final bool isVisible;
   final Widget child;
 
-  /// 高度动画时长（M3 规范：面板展开走 MEDIUM1）。
+  /// 高度动画时长（M3 规范：面板展开走 `M3Motion.medium1`）。
   final Duration duration;
 
   /// 透明度动画时长。比高度短 —— 内容先亮起来，再长开。
@@ -123,13 +121,11 @@ class _CollapsibleSectionState extends State<CollapsibleSection>
 
 /// 同位置整体替换内容 —— M3 的 Fade Through。
 ///
-/// 对应 KMP 的 `AnimatedContent(targetState = ..., transitionSpec = M3Motion.fadeThrough())`。
-///
 /// M3 规定两段**不重叠**：旧内容先淡出 90ms，新内容再淡入 210ms 并从 92% 放大。
 /// 同时在场会看到两层叠影，比硬切还糟 —— 所以不能直接用 `AnimatedSwitcher`：
 /// 它让进出场共用一条时间轴，两段必然重叠。
 ///
-/// 和 KMP 一样用「目标状态」驱动，而不是靠 `child` 的实例比较：
+/// 用「目标状态」驱动，而不是靠 `child` 的实例比较：
 /// 空态 ↔ 列表两边可能都是 `ListView`，只比 widget 实例会分不清该不该动。
 class AnimatedContentSwitch<T> extends StatefulWidget {
   const AnimatedContentSwitch({

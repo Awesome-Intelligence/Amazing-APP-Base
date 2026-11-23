@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'agent_event.dart';
 
-/// 工具调用步骤的状态。对应 KMP 的 `ChatStep`。
+/// 工具调用步骤的状态。
 enum ChatStepStatus { pending, running, done, failed }
 
-/// 聊天里的一次工具调用（过程折叠用）。对应 KMP 的 `ChatStep`。
+/// 聊天里的一次工具调用（过程折叠用）。
 class ChatStep {
   final String toolName;
   final Map<String, Object?> args;
@@ -15,7 +15,7 @@ class ChatStep {
   ChatStep(this.toolName, this.args, [this.status = ChatStepStatus.pending]);
 }
 
-/// 一条聊天消息（UI 只认消息，不认事件）。对应 KMP 的 `ChatMessage`。
+/// 一条聊天消息（UI 只认消息，不认事件）。
 sealed class ChatMessage {
   const ChatMessage();
 }
@@ -42,7 +42,6 @@ final class ErrorChatMessage extends ChatMessage {
 }
 
 /// 事件 → 消息的映射。app 只 `log.user(...)` / `log.onEvent(...)`，不自己写状态机。
-/// 对应 KMP 的 `ChatLog`。
 class ChatLog {
   final List<ChatMessage> _messages = [];
   final StreamController<List<ChatMessage>> _controller =

@@ -1,4 +1,4 @@
-/// 主题风格。对应 KMP 的 `ThemeStyle`。
+/// 主题风格。
 enum ThemeStyle {
   mono,
   swiss,
@@ -7,7 +7,7 @@ enum ThemeStyle {
   macOS,
 }
 
-/// 外观（深浅色）模式。对应 KMP 的 `AppearanceMode`。
+/// 外观（深浅色）模式。
 ///
 /// - [system] — 跟随系统
 /// - [light] / [dark] — 强制浅色 / 深色

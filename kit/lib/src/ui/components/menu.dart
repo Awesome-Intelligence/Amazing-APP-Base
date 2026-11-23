@@ -36,11 +36,10 @@ class SimpleMenuItem {
 
 /// 右上角「更多」菜单。
 ///
-/// 对应 KMP 的 `SimpleMenuButton`。那边用 DropdownMenu 手工平面展开子菜单，
-/// 因为 Compose 的 DropdownMenu 不支持嵌套；这边用 M3 的 [MenuAnchor]，
-/// 子菜单是真的嵌套浮层 —— 规范做法，也不用自己维护「哪个子菜单展开着」。
+/// 用 M3 的 [MenuAnchor]：子菜单是真的嵌套浮层 —— 规范做法，
+/// 也不用自己维护「哪个子菜单展开着」。
 ///
-/// 回调保留 KMP 的形状：`(父项索引, 子项索引)`。顶层项子索引为 -1；
+/// 回调形状：`(父项索引, 子项索引)`。顶层项子索引为 -1；
 /// 父项索引都是在传入 [items] 里的位置（**含分割线**）。
 class SimpleMenuButton extends StatelessWidget {
   const SimpleMenuButton({

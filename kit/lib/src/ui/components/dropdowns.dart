@@ -14,7 +14,7 @@ class DropdownOption<T> {
 
 /// 下拉选择菜单 —— 外形等同于带外框的输入框，点开是选项列表。
 ///
-/// 对应 KMP 的 `SelectDropdown`（M3 ExposedDropdownMenu）。
+/// M3 ExposedDropdownMenu。
 ///
 /// 为什么不用 Flutter 的 [DropdownButtonFormField]：它的 `value` 已废弃改成
 /// `initialValue`，受控组件每次外部改值都得换 key 强制重建。这里用

@@ -5,8 +5,8 @@
 /// 移动端 / 桌面 / CLI 从 `package:kit/kit_io.dart` 拿文件版实现，
 /// Web 用各自的替代实现（localStorage 等），互不影响。
 ///
-/// 对应 KMP 那边「实现放 `androidMain`/`desktopMain`、不进 commonMain」的做法 ——
-/// Dart 没有 source set，用「分入口导出」达到同样的编译期隔离。
+/// Dart 没有 source set，用「分入口导出」达到同样的编译期隔离：
+/// 平台相关的实现只出现在本入口，纯 Dart 的部分留在 `kit.dart`。
 library;
 
 export 'src/storage/file_entity_store.dart';

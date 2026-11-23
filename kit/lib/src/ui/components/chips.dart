@@ -27,7 +27,7 @@ class KitFilterChip extends StatelessWidget {
   /// 前置色点（优先级 / 标签色）。
   final Color? leadingDotColor;
 
-  /// 前置图标（和色点互斥，同时传会两个都显示 —— Compose 版也是这个行为）。
+  /// 前置图标（和色点互斥，同时传会两个都显示）。
   final IconData? leadingIcon;
 
   @override
@@ -38,7 +38,7 @@ class KitFilterChip extends StatelessWidget {
     return FilterChip(
       selected: isSelected,
       onSelected: (_) => onTap(),
-      // Compose 的 FilterChip 选中时不画勾，靠底色变化表达。
+      // FilterChip 选中时不画勾，靠底色变化表达。
       showCheckmark: false,
       backgroundColor: scheme.surface,
       selectedColor: scheme.primary,
@@ -148,7 +148,7 @@ class AnswerChip extends StatelessWidget {
 ///
 /// 规格：水平内边距 16、chip 间距 8，可横向滚动。
 /// 新代码优先用泛型版 [KitFilterChipRow]（和下拉选择器 API 对齐）；
-/// 这个版本留着是为了平移 KMP 里按下标的老调用点。
+/// 这个版本按下标回传，给还在按下标的老调用点用。
 class KitFilterChipRowIndexed extends StatelessWidget {
   const KitFilterChipRowIndexed({
     super.key,

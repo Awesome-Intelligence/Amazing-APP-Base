@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../i18n/kit_strings.dart';
 import '../../theme/kit_theme.dart';
 
-/// 筛选类型。对应 KMP 的 `FilterType` 枚举。
+/// 筛选类型。
 enum FilterType {
   /// 重要性（今天 / 本周 …）。
   importance,
@@ -15,7 +15,7 @@ enum FilterType {
   type,
 }
 
-/// 一条活跃筛选条件。对应 KMP 的 `ActiveFilter`。
+/// 一条活跃筛选条件。
 class ActiveFilter {
   /// 唯一标识 —— 同一个 label 可能出现两次（不同来源），所以不能拿 label 当 key。
   final String id;
@@ -39,7 +39,7 @@ class ActiveFilter {
   String toString() => 'ActiveFilter($id, $type, $label)';
 }
 
-/// 活跃筛选条件展示栏。对应 KMP 的 `ui/components/ActiveFiltersBar.kt`。
+/// 活跃筛选条件展示栏。
 ///
 /// 显示当前生效的筛选条件（重要性 / 标签 / 类型），每条可单点移除；
 /// 右侧「清除全部」一键清空。列表为空时**整条不占位置** ——
@@ -138,7 +138,7 @@ class _FilterChip extends StatelessWidget {
     return InputChip(
       selected: true,
       onDeleted: onRemove,
-      // 选中态不画勾（Compose 版靠底色表达选中）
+      // 选中态不画勾（靠底色表达选中）
       showCheckmark: false,
       backgroundColor: scheme.secondaryContainer,
       selectedColor: scheme.secondaryContainer,

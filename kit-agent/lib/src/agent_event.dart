@@ -1,6 +1,6 @@
-/// Agent 运行时向 UI 抛的事件。与 KMP kit-agent-koog 的 `AgentEvent` 同构。
+/// Agent 运行时向 UI 抛的事件。
 ///
-/// 关键语义（沿用 KMP）：
+/// 关键语义：
 /// - [AgentEventText] 是**增量块**，不是整段回复；同一轮会来很多次，UI 追加进当前气泡。
 /// - [AgentEventResult.text] 是拼好的完整回复，只用来标记"说完了"，**别再追加一遍**。
 sealed class AgentEvent {

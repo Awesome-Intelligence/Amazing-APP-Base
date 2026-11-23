@@ -4,7 +4,7 @@
 /// （气泡颜色、对齐、能不能折叠都不一样）。早先一个 `Msg(fromUser, text)` 只够
 /// 「把字显示出来」，过程（工具调用）就没地方挂 —— 那一层是 agent 界面真正需要的东西。
 ///
-/// Dart 没有嵌套类，所以用 `ChatMessage.user(...)` 这类重定向构造器保持 KMP 的调用手感，
+/// Dart 没有嵌套类，所以用 `ChatMessage.user(...)` 这类重定向构造器，
 /// 匹配时用具体类型（`case ChatMessageAssistant()`）。
 sealed class ChatMessage {
   const ChatMessage();

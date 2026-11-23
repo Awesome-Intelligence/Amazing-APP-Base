@@ -31,7 +31,7 @@ void main() {
       expect(find.text('全部'), findsOneWidget);
       final chip = tester.widget<FilterChip>(find.byType(FilterChip));
       expect(chip.selected, isTrue);
-      // Compose 版选中不画勾，靠底色；Flutter 必须显式关掉默认勾。
+      // 选中不画勾，靠底色表达 —— 必须显式关掉默认勾。
       expect(chip.showCheckmark, isFalse);
 
       await tester.tap(find.text('全部'));

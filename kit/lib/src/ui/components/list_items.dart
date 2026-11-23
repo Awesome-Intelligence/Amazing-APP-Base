@@ -6,7 +6,7 @@ import 'tag_text.dart';
 
 /// 列表条目 —— M3 ListItem 等价物。
 ///
-/// 规格（对应 KMP 的 `AppListItem`）：
+/// 规格：
 /// - leading：40 圆形色块（编号/头像），或 9 色点（[leadingBadgeIsDot]）
 /// - headline：titleSmall、单行省略
 /// - supporting：bodySmall、onSurfaceVariant、单行

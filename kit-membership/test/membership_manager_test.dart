@@ -1,7 +1,7 @@
 import 'package:kit_membership/membership.dart';
 import 'package:test/test.dart';
 
-/// 把 KMP 的 MembershipManagerTest 逐条翻译过来，验证 Dart 版语义等价。
+/// 会员 / 额度语义的单测。
 void main() {
   final catalog = PlanCatalog([
     Plan(

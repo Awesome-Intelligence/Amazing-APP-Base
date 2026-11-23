@@ -210,7 +210,7 @@ void main() {
           reason: 'delete_item 被 Deny，execute 不应执行');
 
       // 闸门把"拒绝"作为工具结果回给模型：框架标记为 isError -> ToolFailed，
-      // 模型据此改道（这正是 KMP "执行前拦截" 闸门想要的语义）。
+      // 模型据此改道（这正是"执行前拦截"闸门想要的语义）。
       final failed = events.whereType<ac.AgentEventToolFailed>().firstWhere(
         (e) => e.name == 'delete_item',
         orElse: () => throw StateError('缺少 delete_item 的工具结果事件'),

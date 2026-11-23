@@ -9,7 +9,7 @@ import '../../theme/theme_tokens.dart';
 /// 规格：圆角走主题的 medium 桶、内边距 16、surfaceContainer 背景、0 elevation
 /// （M3 用色阶分层不用阴影；Swiss / Notion / E-Ink / macOS 更是明确禁阴影）。
 ///
-/// 对应 KMP 的 `AppCard`（它拆成了「无点击 / 有点击」两个重载，Dart 用可空 [onTap] 合并）。
+/// 「无点击 / 有点击」两种形态用可空 [onTap] 合并。
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
