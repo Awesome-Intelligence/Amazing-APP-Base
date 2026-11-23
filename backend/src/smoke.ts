@@ -1,11 +1,13 @@
 /** 冒烟检查（不花 token，不连网）：skill 能加载、契约是合法 JSON Schema、parseOutput 行为正确。 */
 import assert from "node:assert";
+import { generateKeyPairSync } from "node:crypto";
 import type { AddressInfo } from "node:net";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import { loadSkills, inputError, parseOutput } from "./skills.js";
 import { abortOnDisconnect } from "./sse.js";
 import { mayResume, RateLimiter, userOf } from "./guard.js";
+import { fcmTargetFromEnv, ntfyTargetFromEnv, publishFcm, publishNtfy } from "./notify.js";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -99,3 +101,62 @@ function checkGuards() {
 
 checkGuards();
 console.log("smoke 通过: 鉴权 / session 归属 / 限流");
+
+/**
+ * 推送通道自检：ntfy 的请求长什么样、FCM 的 token 怎么换、发了几个成功。
+ * 全部用假 fetch —— 不连网、不花钱。
+ */
+async function checkNotify() {
+  const calls: { url: string; method?: string; headers?: Record<string, string>; body?: string }[] = [];
+  const fakeFetch = async (
+    url: string,
+    init?: { method?: string; headers?: Record<string, string>; body?: string },
+  ) => {
+    calls.push({ url, ...init });
+    return { ok: true, status: 200, text: async () => JSON.stringify({ access_token: "at-1" }) };
+  };
+
+  // ntfy
+  const target = ntfyTargetFromEnv({ NTFY_TOPIC: "demo-topic", NTFY_TOKEN: "tk_x" } as never);
+  assert.ok(target, "配了 NTFY_TOPIC 就该有目标");
+  assert.equal(target!.server, "https://ntfy.sh");
+  await publishNtfy({ title: "标题", body: "正文" }, target!, fakeFetch as never);
+  assert.equal(calls.at(-1)!.url, "https://ntfy.sh/demo-topic");
+  assert.equal(calls.at(-1)!.headers!["authorization"], "Bearer tk_x");
+  assert.deepEqual(JSON.parse(calls.at(-1)!.body!), {
+    topic: "demo-topic",
+    title: "标题",
+    message: "正文",
+  });
+
+  // 没配主题 = 不走 ntfy
+  assert.equal(ntfyTargetFromEnv({} as never), null);
+
+  // FCM：现生成一把 RSA 私钥，走完整的换 token + 发消息
+  const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const fcm = fcmTargetFromEnv({
+    FCM_PROJECT_ID: "proj-1",
+    FCM_SERVICE_ACCOUNT_JSON: JSON.stringify({
+      client_email: "sa@x.iam",
+      private_key: privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
+    }),
+  } as never);
+  assert.ok(fcm, "配全了 FCM 就该有目标");
+  const sent = await publishFcm(
+    { title: "标题", body: "正文" },
+    fcm!,
+    ["token-a", "token-b"],
+    fakeFetch as never,
+  );
+  assert.equal(sent, 2, "两个 token 都该发成功");
+  const tokenCall = calls.find((c) => c.url.includes("oauth2.googleapis.com"))!;
+  assert.ok(tokenCall, "应该先换 access token");
+  const assertion = new URLSearchParams(tokenCall.body!).get("assertion")!;
+  assert.equal(assertion.split(".").length, 3, "JWT 应该是三段");
+  const msgCall = calls.find((c) => c.url.includes("messages:send"))!;
+  assert.equal(msgCall.url, "https://fcm.googleapis.com/v1/projects/proj-1/messages:send");
+  assert.equal(JSON.parse(msgCall.body!).message.token, "token-a");
+}
+
+await checkNotify();
+console.log("smoke 通过: 推送通道（ntfy / FCM）");
