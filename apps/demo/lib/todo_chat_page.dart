@@ -43,11 +43,22 @@ final _catalog = PlanCatalog([
 /// 4. 数据落 `kit` 的 `EntityStore`，AI 请求受 `membership` 额度闸门控制。
 /// 5. 五套主题风格 + 中英文实时切换 —— 入口在页头「设置」，状态由根传下来。
 class TodoChatPage extends StatefulWidget {
-  const TodoChatPage({super.key, required this.onOpenSettings});
+  const TodoChatPage({
+    super.key,
+    required this.onOpenSettings,
+    required this.notifications,
+    required this.onNotificationsChanged,
+  });
 
   /// 打开设置页。由外壳提供 —— 设置状态在 MaterialApp 之上，
   /// 页面自己 push 会拿不到最新值。
   final VoidCallback onOpenSettings;
+
+  /// 站内消息仓库（外壳持有，这里只写）。
+  final NotificationStore notifications;
+
+  /// 写了通知之后通知外壳 —— 外壳要拿它刷底栏角标。
+  final VoidCallback onNotificationsChanged;
 
   @override
   State<TodoChatPage> createState() => _TodoChatPageState();
@@ -197,12 +208,20 @@ class _TodoChatPageState extends State<TodoChatPage> {
     inputC.clear();
     setState(() => _busy = true);
     log.user(text);
+    var reply = '';
     await for (final ev in session.send(text)) {
       log.onEvent(ev);
+      // AgentEventResult 是整轮拼好的回复（别再追加进气泡）。
+      if (ev is AgentEventResult) reply = ev.text;
     }
     await _loadRemaining();
     // agent 可能刚加了/删了待办 —— 列表也得刷。
     await _reloadTodos();
+    if (reply.trim().isNotEmpty) {
+      // 这一轮回复落成一条站内通知：消息中心有东西可看，底栏角标有来源。
+      await widget.notifications.add(title: '助手回复完成', body: reply);
+      widget.onNotificationsChanged();
+    }
     if (mounted) setState(() => _busy = false);
   }
 

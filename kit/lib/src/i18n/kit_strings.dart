@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../settings/app_language.dart';
 import '../settings/theme_enums.dart';
 
-/// 底座内置文案。对应 KMP 的 `res/values*/strings.xml` 里 agent 相关那几条。
+/// 底座内置文案。
 ///
 /// 为什么不用 gen-l10n / intl：kit 是被各 app fork 的底座，文案量很小（个位数），
 /// 走 ARB 会引入代码生成步骤、也让下游改一句话得跑一遍 build。这里用普通的类继承：
@@ -121,6 +121,12 @@ abstract class KitStrings {
   String get operationSuccess;
   String get operationFailed;
 
+  /// 提示条的级别名（读屏用）。
+  String get noticeInfo;
+  String get noticeSuccess;
+  String get noticeWarning;
+  String get noticeError;
+
   /// 进度百分比。
   String progressPercent(int percent);
 
@@ -149,7 +155,7 @@ abstract class KitStrings {
 
   /// 会员 / 付费墙。
   ///
-  /// KMP 把这些放在 `kit-membership` 自己的资源里（跟 kit 的不混）；
+  /// 这些属于 membership（跟 kit 的不混）；
   /// Flutter 只有一个 `KitStrings`，所以挪到这里，靠注释分组。
   String get membershipPaywallTitle;
   String get membershipUpgrade;
@@ -166,7 +172,7 @@ abstract class KitStrings {
   String quotaContactMessage(int limit);
   String quotaAiMessage(int limit);
 
-  /// 版本更新弹窗（对应 KMP 的 `strings.xml` 里 `update_*` 那几条）。
+  /// 版本更新弹窗。
   String get updateAvailableTitle;
   String get updateRequiredTitle;
   String get updateRequiredHint;
@@ -183,6 +189,13 @@ abstract class KitStrings {
 
   /// 移除单个筛选的无障碍描述，[label] 是筛选名。
   String removeFilter(String label);
+
+  /// 通知 / 消息中心。
+  String get notificationEmptyTitle;
+  String get notificationEmptySubtitle;
+
+  /// 未读标记的无障碍读法。
+  String get notificationUnread;
 
   /// 按语言偏好取文案。[AppLanguage.system] 落中文（与「默认资源是中文」一致）。
   static KitStrings forLanguage(AppLanguage language) => switch (language) {
@@ -341,6 +354,15 @@ class _ZhStrings extends KitStrings {
   String get operationFailed => '操作失败！';
 
   @override
+  String get noticeInfo => '提示';
+  @override
+  String get noticeSuccess => '成功';
+  @override
+  String get noticeWarning => '警告';
+  @override
+  String get noticeError => '错误';
+
+  @override
   String progressPercent(int percent) => '$percent%';
 
   @override
@@ -416,6 +438,13 @@ class _ZhStrings extends KitStrings {
   String get clearAll => '清除全部';
   @override
   String removeFilter(String label) => '移除筛选 $label';
+
+  @override
+  String get notificationEmptyTitle => '暂无通知';
+  @override
+  String get notificationEmptySubtitle => '有新的动态时会显示在这里';
+  @override
+  String get notificationUnread => '未读';
 }
 
 class _EnStrings extends KitStrings {
@@ -565,6 +594,15 @@ class _EnStrings extends KitStrings {
   String get operationFailed => 'Operation failed!';
 
   @override
+  String get noticeInfo => 'Notice';
+  @override
+  String get noticeSuccess => 'Success';
+  @override
+  String get noticeWarning => 'Warning';
+  @override
+  String get noticeError => 'Error';
+
+  @override
   String progressPercent(int percent) => '$percent%';
 
   @override
@@ -646,6 +684,13 @@ class _EnStrings extends KitStrings {
   String get clearAll => 'Clear all';
   @override
   String removeFilter(String label) => 'Remove filter $label';
+
+  @override
+  String get notificationEmptyTitle => 'No notifications yet';
+  @override
+  String get notificationEmptySubtitle => 'New activity will show up here';
+  @override
+  String get notificationUnread => 'Unread';
 }
 
 /// 文案作用域。没套作用域时用中文，单测/预览不用额外配置。

@@ -33,8 +33,10 @@ void main() {
 
       expect(find.text('我今天有几件事？'), findsOneWidget);
       expect(find.text('你有 3 件待办，其中 1 件今天到期。'), findsOneWidget);
-      // 错误前缀是组件加的
-      expect(find.text('⚠️ 网络断了'), findsOneWidget);
+      // 错误走提示条：文案原样，⚠️ 前缀换成组件自带的图标
+      expect(find.text('网络断了'), findsOneWidget);
+      expect(find.byType(AppNotice), findsOneWidget);
+      expect(find.byIcon(Icons.error), findsOneWidget);
     });
 
     testWidgets('过程默认折叠成一行，点击后展开每一步', (tester) async {

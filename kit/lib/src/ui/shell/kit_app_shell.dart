@@ -30,21 +30,36 @@ import '../../theme/theme_tokens.dart';
 ///
 /// [KitTheme] 从 `builder` 注入（在 MaterialApp 内部、Navigator 之上），
 /// 所以每个路由里 `KitTheme.of(context)` 都能拿到与实际渲染一致的 tokens。
+///
+/// app 自己带路由（go_router 等）时给 [routerConfig]：底座不内置路由，
+/// 但主题和文案照样注入到路由里的每一个页面。
 class KitAppShell extends StatelessWidget {
   const KitAppShell({
     super.key,
     required this.settings,
-    required this.home,
+    this.home,
+    this.routerConfig,
     this.title = '',
     this.tokens,
     this.locale,
     this.debugShowCheckedModeBanner = false,
-  });
+  }) : assert(
+         home != null || routerConfig != null,
+         '要么给 home，要么给 routerConfig —— 两个都没有的话没东西可显示',
+       );
 
   /// 当前设置。改了它（新实例）就会重绘整套主题。
   final AppSettings settings;
 
-  final Widget home;
+  /// 首屏。给了 [routerConfig] 就用不上（`MaterialApp.router` 不收 home）。
+  final Widget? home;
+
+  /// app 自带的路由（go_router 之类）。给了就走 `MaterialApp.router`。
+  ///
+  /// 底座**不内置路由** —— 路由表由 app 自己定；这里只保证主题和文案照样
+  /// 注入到路由里的每一个页面（`builder` 在 Navigator 之上）。
+  final RouterConfig<Object>? routerConfig;
+
   final String title;
 
   /// 品牌主题：给了就用它，忽略 [AppSettings.themeStyle]。
@@ -62,6 +77,43 @@ class KitAppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = settings.themeStyle;
     final language = settings.language;
+    final router = routerConfig;
+
+    // 主题和文案的注入 —— 两条路径（MaterialApp / MaterialApp.router）共用。
+    Widget inject(BuildContext context, Widget? child) {
+      // 到了这里 Theme 已经按 themeMode 定好，反查就得到「实际生效的深浅」——
+      // 跟随系统时不用自己监听平台亮度。
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final resolved = tokens ?? tokensFor(style, isDark);
+      // system 语言要按「系统实际给的 locale」落，不能用 settings.language 猜。
+      final effectiveLanguage = language == AppLanguage.system
+          ? AppLanguage.fromSystemLanguage(Localizations.localeOf(context).languageCode)
+          : language;
+
+      return KitTheme(
+        tokens: resolved,
+        reducedMotion: settings.reducedMotion,
+        child: KitStringsScope(
+          strings: KitStrings.forLanguage(effectiveLanguage),
+          child: child ?? const SizedBox.shrink(),
+        ),
+      );
+    }
+
+    if (router != null) {
+      return MaterialApp.router(
+        title: title,
+        debugShowCheckedModeBanner: debugShowCheckedModeBanner,
+        theme: kitThemeData(tokens ?? tokensFor(style, false)),
+        darkTheme: kitThemeData(tokens ?? tokensFor(style, true)),
+        themeMode: _themeModeOf(settings.appearanceMode),
+        locale: locale ?? _localeOf(language),
+        supportedLocales: const [Locale('zh'), Locale('en')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        routerConfig: router,
+        builder: inject,
+      );
+    }
 
     return MaterialApp(
       title: title,
@@ -72,25 +124,7 @@ class KitAppShell extends StatelessWidget {
       locale: locale ?? _localeOf(language),
       supportedLocales: const [Locale('zh'), Locale('en')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      builder: (context, child) {
-        // 到了这里 Theme 已经按 themeMode 定好，反查就得到「实际生效的深浅」——
-        // 跟随系统时不用自己监听平台亮度。
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final resolved = tokens ?? tokensFor(style, isDark);
-        // system 语言要按「系统实际给的 locale」落，不能用 settings.language 猜。
-        final effectiveLanguage = language == AppLanguage.system
-            ? AppLanguage.fromSystemLanguage(Localizations.localeOf(context).languageCode)
-            : language;
-
-        return KitTheme(
-          tokens: resolved,
-          reducedMotion: settings.reducedMotion,
-          child: KitStringsScope(
-            strings: KitStrings.forLanguage(effectiveLanguage),
-            child: child ?? const SizedBox.shrink(),
-          ),
-        );
-      },
+      builder: inject,
       home: home,
     );
   }

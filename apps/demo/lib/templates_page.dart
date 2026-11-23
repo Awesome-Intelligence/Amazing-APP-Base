@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:kit/kit.dart' show AppSettings;
 import 'package:kit/kit_ui.dart';
+
+import 'route_transition.dart';
 
 /// 模板屏演示：`KitListScreen` + `KitFormScreen`。
 ///
@@ -10,12 +11,11 @@ import 'package:kit/kit_ui.dart';
 class TemplatesPage extends StatefulWidget {
   const TemplatesPage({
     super.key,
-    required this.settings,
-    required this.onSettingsChange,
+    required this.onOpenSettings,
   });
 
-  final AppSettings settings;
-  final ValueChanged<AppSettings> onSettingsChange;
+  /// 打开设置页。由外壳提供（设置页是路由，设置状态在 MaterialApp 之上）。
+  final VoidCallback onOpenSettings;
 
   @override
   State<TemplatesPage> createState() => _TemplatesPageState();
@@ -51,7 +51,10 @@ class _TemplatesPageState extends State<TemplatesPage> {
 
   Future<void> _openForm({KitListItem? editing}) async {
     final saved = await Navigator.of(context).push<KitListItem>(
-      MaterialPageRoute<KitListItem>(
+      // 层级推进（列表 → 详情）：app 自己写 PageRouteBuilder，
+      // 时长取 M3Motion.medium2，减动效时自动归零。
+      kitPageRoute<KitListItem>(
+        context,
         builder: (_) => _ContactFormPage(initial: editing),
       ),
     );
@@ -95,7 +98,7 @@ class _TemplatesPageState extends State<TemplatesPage> {
           tooltip: '设置',
           onSelected: (value) {
             if (value == 'settings') {
-              _openSettings();
+              widget.onOpenSettings();
             } else {
               setState(() {
                 _mode = ListViewMode.values.firstWhere((m) => m.name == value);
@@ -152,23 +155,6 @@ class _TemplatesPageState extends State<TemplatesPage> {
         ListViewMode.gallery => '网格',
         ListViewMode.calendar => '日历',
       };
-
-  Future<void> _openSettings() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => StatefulBuilder(
-          builder: (routeContext, setLocal) => SettingsScreen(
-            settings: widget.settings,
-            onSettingsChange: (next) {
-              widget.onSettingsChange(next);
-              setLocal(() {});
-            },
-            onBackClick: () => Navigator.of(routeContext).pop(),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 /// 画廊用的方块卡片：一个大首字母 + 名字，宽度只有 100–160 也不溢出。

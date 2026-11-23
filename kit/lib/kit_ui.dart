@@ -21,7 +21,7 @@
 /// - 占位：`SkeletonTextLine` / `SkeletonRect` / `SkeletonCircle` /
 ///   `SkeletonListItem` / `SkeletonCard` / `SkeletonGridItem` + 4 个预设骨架屏
 /// - 空态：`IllustratedEmptyState` / `EmptyStates`
-/// - 反馈：`AppSnackbar` / `showAppSnackbar` / `LoadingIndicator` /
+/// - 反馈：`AppNotice` / `NoticeSeverity` / `showAppNotice` / `LoadingIndicator` /
 ///   `LoadingOverlay` / `CenteredLoading`
 /// - 进度：`LinearProgressBar` / `CircularProgressIndicatorWithText` / `StatusMark`
 /// - 按钮：`PrimaryButton` / `SecondaryButton` / `SmallSecondaryButton` /
@@ -30,6 +30,7 @@
 /// - 卡片：`AppCard` / `SmallCard` / `CardTitle` / `StatsCard` / `StatItem`
 /// - 菜单：`SimpleMenuButton` / `SimpleMenuItem` / `ActionMenuRow` / `SelectDropdown`
 /// - 导航：`AppBottomNavigation` / `BottomNavItem` / `PageIndicator`
+/// - 通知：`AppNotificationList`
 /// - 头像：`UserAvatar` / `AvatarStack` / `ExpandedAvatarRow` / `ContactItem`
 /// - 网格：`adaptiveGridColumns` / `adaptiveGridDelegate` / `gridSpacingFor`
 /// - 动效：`CollapsibleSection` / `AnimatedContentSwitch` / `M3Motion` / `motionDuration`
@@ -92,6 +93,7 @@ export 'src/ui/components/header.dart';
 export 'src/ui/components/list_items.dart';
 export 'src/ui/components/menu.dart';
 export 'src/ui/components/motion.dart';
+export 'src/ui/components/notification_list.dart';
 export 'src/ui/components/page_indicator.dart';
 export 'src/ui/components/progress.dart';
 export 'src/ui/components/search_bar.dart';

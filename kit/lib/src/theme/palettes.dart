@@ -1,15 +1,12 @@
-// 主题色板 —— 迁移时由脚本从原 KMP 色板（ColorMono/Swiss/Notion/EInk/MacOS.kt）逐项机械转换而来，
-// 保证色值一字不差。新增风格请手工加一套，别改已有取值（下游主题会跟着变）。
-// 源：kit/src/commonMain/kotlin/com/androidkit/app/ui/theme/{ColorMono,ColorSwiss,ColorNotion,ColorEInk,ColorMacOS}.kt
-//
-// 色值与 Kotlin 版逐项一致（同 hex），迁移后视觉不应有任何偏移。
+// 主题色板 —— 5 套风格各自的颜色槽位。
+// 已有取值别改（下游主题会跟着变）；新增风格在这里加一套。
 // ignore_for_file: constant_identifier_names
 
 import 'dart:ui' show Color;
 
 import 'extended_colors.dart';
 
-/// Kotlin `object Mono` 的等价物：一套主题的 35 个颜色槽位。
+/// Mono 风格的一套颜色槽位。
 abstract final class Mono {
   static const Color primaryLight = Color(0xFF1D1915);
   static const Color onPrimaryLight = Color(0xFFFFFFFF);
@@ -83,7 +80,7 @@ abstract final class Mono {
   static const Color surfaceContainerHighestDark = Color(0xFF38332D);
 }
 
-/// Kotlin `object Swiss` 的等价物：一套主题的 35 个颜色槽位。
+/// Swiss 风格的一套颜色槽位。
 abstract final class Swiss {
   static const Color redInk = Color(0xFFC40000);
   static const Color redOnDark = Color(0xFFFF3B30);
@@ -162,7 +159,7 @@ abstract final class Swiss {
   static const Color surfaceContainerHighestDark = Color(0xFF2A2A2A);
 }
 
-/// Kotlin `object Notion` 的等价物：一套主题的 35 个颜色槽位。
+/// Notion 风格的一套颜色槽位。
 abstract final class Notion {
   static const Color primaryLight = Color(0xFF37352F);
   static const Color onPrimaryLight = Color(0xFFFFFFFF);
@@ -238,7 +235,7 @@ abstract final class Notion {
   static const Color surfaceContainerHighestDark = Color(0xFF3A3936);
 }
 
-/// Kotlin `object EInk` 的等价物：一套主题的 35 个颜色槽位。
+/// E-Ink 风格的一套颜色槽位。
 abstract final class EInk {
   static const Color paper = Color(0xFFF5F3EA);
   static const Color ink = Color(0xFF20211E);
@@ -319,7 +316,7 @@ abstract final class EInk {
   static const Color surfaceContainerHighestDark = Color(0xFF3A3833);
 }
 
-/// Kotlin `object MacOS` 的等价物：一套主题的 35 个颜色槽位。
+/// macOS 风格的一套颜色槽位。
 abstract final class MacOS {
   static const Color primaryDark = Color(0xFF0A84FF);
   static const Color onPrimaryDark = Color(0xFFFFFFFF);
@@ -399,140 +396,160 @@ abstract final class MacOS {
   static const Color selectionLight = Color(0x2E007AFF);
 }
 
-/// Kotlin `SwissLightExtended` 的等价物。
+/// Swiss 浅色扩展色。
 const ExtendedColors SwissLightExtended = ExtendedColors(
   success: Color(0xFF1B7A4B),
   onSuccess: Color(0xFFFFFFFF),
   successContainer: Color(0xFFDFF2E6),
+  onSuccessContainer: Color(0xFF0F5132),
   warning: Color(0xFF8A5A00),
   onWarning: Color(0xFFFFFFFF),
   warningContainer: Color(0xFFFFF0D0),
+  onWarningContainer: Color(0xFF5A3A00),
   aiAccent: Color(0xFF0057B8),
   aiContainer: Color(0xFFE3ECFA),
   onAiContainer: Color(0xFF003061),
   star: Color(0xFF6C3B00),
 );
 
-/// Kotlin `SwissDarkExtended` 的等价物。
+/// Swiss 深色扩展色。
 const ExtendedColors SwissDarkExtended = ExtendedColors(
   success: Color(0xFF6BCB96),
   onSuccess: Color(0xFF003822),
   successContainer: Color(0xFF1B4D35),
+  onSuccessContainer: Color(0xFF8FE3BC),
   warning: Color(0xFFE8B84B),
   onWarning: Color(0xFF3F2D00),
   warningContainer: Color(0xFF57430F),
+  onWarningContainer: Color(0xFFFFD98A),
   aiAccent: Color(0xFF5B9BE0),
   aiContainer: Color(0xFF12304F),
   onAiContainer: Color(0xFFCFE2FF),
   star: Color(0xFFC08A3E),
 );
 
-/// Kotlin `NotionLightExtended` 的等价物。
+/// Notion 浅色扩展色。
 const ExtendedColors NotionLightExtended = ExtendedColors(
   success: Color(0xFF0F7B6C),
   onSuccess: Color(0xFFFFFFFF),
   successContainer: Color(0xFFD7EBE7),
+  onSuccessContainer: Color(0xFF04443C),
   warning: Color(0xFF8A6800),
   onWarning: Color(0xFFFFFFFF),
   warningContainer: Color(0xFFF7EDD0),
+  onWarningContainer: Color(0xFF5A4300),
   aiAccent: Color(0xFF6D4AD8),
   aiContainer: Color(0xFFEFE9FB),
   onAiContainer: Color(0xFF26174F),
   star: Color(0xFF8A6800),
 );
 
-/// Kotlin `NotionDarkExtended` 的等价物。
+/// Notion 深色扩展色。
 const ExtendedColors NotionDarkExtended = ExtendedColors(
   success: Color(0xFF4FBFAE),
   onSuccess: Color(0xFF00382F),
   successContainer: Color(0xFF1C4A42),
+  onSuccessContainer: Color(0xFF7FE3D3),
   warning: Color(0xFFE0B64B),
   onWarning: Color(0xFF3A2B00),
   warningContainer: Color(0xFF4A3A0C),
+  onWarningContainer: Color(0xFFFFE08A),
   aiAccent: Color(0xFFB39CF0),
   aiContainer: Color(0xFF322A52),
   onAiContainer: Color(0xFFE6DCFF),
   star: Color(0xFFE0B64B),
 );
 
-/// Kotlin `EInkLightExtended` 的等价物。
+/// E-Ink 浅色扩展色。
 const ExtendedColors EInkLightExtended = ExtendedColors(
   success: Color(0xFF6E6D64),
   onSuccess: Color(0xFF20211E),
   successContainer: Color(0xFFE6E4DA),
+  onSuccessContainer: Color(0xFF3A3A34),
   warning: Color(0xFF45463F),
   onWarning: Color(0xFFF5F3EA),
   warningContainer: Color(0xFFEDEBE2),
+  onWarningContainer: Color(0xFF3A3A34),
   aiAccent: Color(0xFF20211E),
   aiContainer: Color(0xFFE6E4DA),
   onAiContainer: Color(0xFF20211E),
   star: Color(0xFF555750),
 );
 
-/// Kotlin `EInkDarkExtended` 的等价物。
+/// E-Ink 深色扩展色。
 const ExtendedColors EInkDarkExtended = ExtendedColors(
   success: Color(0xFFA9A79C),
   onSuccess: Color(0xFF20211E),
   successContainer: Color(0xFF34332E),
+  onSuccessContainer: Color(0xFFD8D6CC),
   warning: Color(0xFFE8E6DB),
   onWarning: Color(0xFF20211E),
   warningContainer: Color(0xFF45443D),
+  onWarningContainer: Color(0xFFE0DED4),
   aiAccent: Color(0xFFF5F3EA),
   aiContainer: Color(0xFF34332E),
   onAiContainer: Color(0xFFF5F3EA),
   star: Color(0xFFBAB9B0),
 );
 
-/// Kotlin `MacOSDarkExtended` 的等价物。
+/// macOS 深色扩展色。
 const ExtendedColors MacOSDarkExtended = ExtendedColors(
   success: Color(0xFF30D158),
   onSuccess: Color(0xFF06210F),
   successContainer: Color(0xFF1C3D26),
+  onSuccessContainer: Color(0xFF7BE89B),
   warning: Color(0xFFFF9F0A),
   onWarning: Color(0xFF2B1A00),
   warningContainer: Color(0xFF4A3208),
+  onWarningContainer: Color(0xFFFFC46B),
   aiAccent: Color(0xFF0A84FF),
   aiContainer: Color(0xFF16324B),
   onAiContainer: Color(0xFFA9D2FF),
   star: Color(0xFFFFD60A),
 );
 
-/// Kotlin `MacOSLightExtended` 的等价物。
+/// macOS 浅色扩展色。
 const ExtendedColors MacOSLightExtended = ExtendedColors(
   success: Color(0xFF1B7F3B),
   onSuccess: Color(0xFFFFFFFF),
   successContainer: Color(0xFFDFF3E6),
+  onSuccessContainer: Color(0xFF0B4D22),
   warning: Color(0xFFA8620A),
   onWarning: Color(0xFFFFFFFF),
   warningContainer: Color(0xFFFFF0D6),
+  onWarningContainer: Color(0xFF6B3C00),
   aiAccent: Color(0xFF007AFF),
   aiContainer: Color(0xFFDCEBFF),
   onAiContainer: Color(0xFF003A73),
   star: Color(0xFF8A6D00),
 );
 
-/// Kotlin `LightExtended` 的等价物。
+/// 浅色扩展色。
 const ExtendedColors LightExtended = ExtendedColors(
   success: Color(0xFF2D6A4F),
   onSuccess: Color(0xFFFFFFFF),
   successContainer: Color(0xFFD8F3E4),
+  onSuccessContainer: Color(0xFF0A3D24),
   warning: Color(0xFFB75D00),
   onWarning: Color(0xFFFFFFFF),
   warningContainer: Color(0xFFFFECCF),
+  onWarningContainer: Color(0xFF6B3C00),
   aiAccent: Color(0xFF5E35B1),
   aiContainer: Color(0xFFEDE7F6),
   onAiContainer: Color(0xFF241436),
   star: Color(0xFFC77800),
 );
 
-/// Kotlin `DarkExtended` 的等价物。
+/// 深色扩展色。
 const ExtendedColors DarkExtended = ExtendedColors(
   success: Color(0xFF6BCB96),
   onSuccess: Color(0xFF003822),
   successContainer: Color(0xFF1B4D35),
+  onSuccessContainer: Color(0xFF8FE3BC),
   warning: Color(0xFFFFB95C),
   onWarning: Color(0xFF462900),
   warningContainer: Color(0xFF6B3900),
+  onWarningContainer: Color(0xFFFFD98A),
   aiAccent: Color(0xFFB39DDB),
   aiContainer: Color(0xFF3D2B6B),
   onAiContainer: Color(0xFFEDE7F6),

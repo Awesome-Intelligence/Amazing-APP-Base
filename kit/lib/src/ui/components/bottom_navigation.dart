@@ -27,7 +27,7 @@ class BottomNavItem {
 ///
 /// 选中项的背景条是 primary @12%，未选中图标/文字走 onSurfaceVariant。
 ///
-/// 对应 KMP 的 `AppBottomNavigation`。
+
 class AppBottomNavigation extends StatelessWidget {
   const AppBottomNavigation({
     super.key,

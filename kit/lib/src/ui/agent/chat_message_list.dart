@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../i18n/kit_strings.dart';
 import '../../theme/kit_theme.dart';
+import '../components/feedback.dart';
 import 'chat_message.dart';
 
 /// 聊天消息列表 —— 气泡 + 过程折叠。
@@ -111,10 +112,7 @@ class ChatMessageRow extends StatelessWidget {
           ),
         );
       case ChatMessageError(:final text):
-        return Text(
-          '⚠️ $text',
-          style: tokens.textTheme.bodyMedium?.copyWith(color: tokens.colorScheme.error),
-        );
+        return AppNotice(message: text, severity: NoticeSeverity.error);
     }
   }
 }

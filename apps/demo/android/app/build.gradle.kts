@@ -9,10 +9,14 @@ plugins {
 
 android {
     namespace = "com.androidkit.demo"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications 23 要 compileSdk 37（插件自己就是这么编的，
+    // 低了 AAR 元数据会拦）。Flutter 默认给的是 36，这里显式抬上去。
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // flutter_local_notifications 需要 Java 8+ desugaring（定时通知的老系统兼容）。
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -70,4 +74,9 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // desugaring 的运行库（配合上面的 isCoreLibraryDesugaringEnabled）。
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

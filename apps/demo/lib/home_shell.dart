@@ -1,101 +1,87 @@
-import 'package:material_ui/material_ui.dart';
-import 'package:kit/kit.dart' show AppSettings;
+import 'package:go_router/go_router.dart';
 import 'package:kit/kit_ui.dart' as ui;
+import 'package:material_ui/material_ui.dart';
 
-import 'gallery_page.dart';
-import 'templates_page.dart';
-import 'todo_chat_page.dart';
+import 'demo_store.dart';
 
-/// demo 的页面外壳：底部三个页签（待办 / 组件 / 模板）。
+/// demo 的页面外壳：底部四个页签（待办 / 通知 / 组件 / 模板）。
 ///
-/// 设置页的打开逻辑放在这一层，几个页面共用 —— 各自实现一份迟早会分叉。
-///
-/// 页签用「访问过才构建」的 `IndexedStack`：组件目录里有骨架屏，
-/// 那是**无限循环**动画，一开始就构建的话 `pumpAndSettle` 永远等不到静止，
-/// 测试全得改写。顺带也省了首屏开销。
-class HomeShell extends StatefulWidget {
+/// 页签由 `StatefulShellRoute.indexedStack` 驱动 —— 每个页签有自己的
+/// Navigator，切页签不重建页面，栈和滚动位置都留着。
+/// 底栏只负责切分支；返回键的语义在 [PopScope] 里定。
+class HomeShell extends StatelessWidget {
   const HomeShell({
     super.key,
-    required this.settings,
-    required this.onSettingsChange,
+    required this.navigationShell,
+    required this.store,
   });
 
-  final AppSettings settings;
-  final ValueChanged<AppSettings> onSettingsChange;
+  /// go_router 的分支外壳：当前是第几个页签 + 怎么切。
+  final StatefulNavigationShell navigationShell;
 
-  @override
-  State<HomeShell> createState() => _HomeShellState();
-}
-
-class _HomeShellState extends State<HomeShell> {
-  int _index = 0;
-  final Set<int> _built = {0};
-
-  /// 打开设置页。
-  ///
-  /// 设置页在路由里，而设置状态在根上 —— 根重建时这个路由不会自动重画，
-  /// 所以外面套一层 `StatefulBuilder`：改完值先冒到根（换主题），
-  /// 再让设置页自己重建一次读新值（副标题才不会停在旧风格上）。
-  Future<void> _openSettings() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => StatefulBuilder(
-          builder: (routeContext, setLocal) => ui.SettingsScreen(
-            settings: widget.settings,
-            onSettingsChange: (next) {
-              widget.onSettingsChange(next);
-              setLocal(() {});
-            },
-            onBackClick: () => Navigator.of(routeContext).pop(),
-          ),
-        ),
-      ),
-    );
-  }
+  /// 全局状态（消息、未读数）。
+  final DemoStore store;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _index,
-        children: [
-          _built.contains(0)
-              ? TodoChatPage(onOpenSettings: _openSettings)
-              : const SizedBox.shrink(),
-          _built.contains(1)
-              ? GalleryPage(onOpenSettings: _openSettings)
-              : const SizedBox.shrink(),
-          _built.contains(2)
-              ? TemplatesPage(
-                  settings: widget.settings,
-                  onSettingsChange: widget.onSettingsChange,
-                )
-              : const SizedBox.shrink(),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() {
-          _index = i;
-          _built.add(i);
-        }),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: '待办',
+    final router = GoRouter.of(context);
+
+    // 返回键的三段语义（业界惯例）：
+    // 1. 分支里还有页面 → 退那一层；
+    // 2. 在别的页签 → 回第一个页签（不是直接退出 app）；
+    // 3. 已经在第一个页签且没东西可退 → 交回系统（退出 app）。
+    final canExit = navigationShell.currentIndex == 0 && !router.canPop();
+
+    return PopScope(
+      canPop: canExit,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (router.canPop()) {
+          router.pop();
+          return;
+        }
+        if (navigationShell.currentIndex != 0) {
+          navigationShell.goBranch(0);
+        }
+      },
+      child: Scaffold(
+        body: navigationShell,
+        // 用 kit 的 `AppBottomNavigation`：它自带角标（`badgeCount`），
+        // 底栏那点未读数才有地方显示。
+        bottomNavigationBar: ListenableBuilder(
+          listenable: store,
+          builder: (context, _) => ui.AppBottomNavigation(
+            selectedIndex: navigationShell.currentIndex,
+            // 再点当前页签 = 回到该页签的根（业界惯例）。
+            onItemSelected: (i) => navigationShell.goBranch(
+              i,
+              initialLocation: i == navigationShell.currentIndex,
+            ),
+            items: [
+              const ui.BottomNavItem(
+                label: '待办',
+                icon: Icons.chat_bubble_outline,
+                selectedIcon: Icons.chat_bubble,
+              ),
+              ui.BottomNavItem(
+                label: '通知',
+                icon: Icons.notifications_none,
+                selectedIcon: Icons.notifications,
+                badgeCount: store.unread,
+              ),
+              const ui.BottomNavItem(
+                label: '组件',
+                icon: Icons.widgets_outlined,
+                selectedIcon: Icons.widgets,
+              ),
+              const ui.BottomNavItem(
+                label: '模板',
+                icon: Icons.dashboard_customize_outlined,
+                selectedIcon: Icons.dashboard_customize,
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.widgets_outlined),
-            selectedIcon: Icon(Icons.widgets),
-            label: '组件',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_customize_outlined),
-            selectedIcon: Icon(Icons.dashboard_customize),
-            label: '模板',
-          ),
-        ],
+        ),
       ),
     );
   }

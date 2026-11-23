@@ -9,7 +9,7 @@ import 'buttons.dart';
 /// 结构：100 的图标容器（tint 色淡填充）+ titleLarge 标题 + bodyMedium 副标题
 /// + 可选主操作。整块纵向排布、间距 20、上下留白 40。
 ///
-/// 对应 KMP 的 `IllustratedEmptyState`。
+
 class IllustratedEmptyState extends StatelessWidget {
   const IllustratedEmptyState({
     super.key,
@@ -90,7 +90,7 @@ class IllustratedEmptyState extends StatelessWidget {
   }
 }
 
-/// 预置空状态 —— 对应 KMP 的 `EmptyStates` 对象。
+/// 预置空状态集合。
 ///
 /// 都是静态工厂：业务页写 `EmptyStates.contacts()` 就够，不用每次凑图标和文案。
 /// 返回 widget 而不是直接画，是为了能塞进 `CustomScrollView` 的 sliver 里

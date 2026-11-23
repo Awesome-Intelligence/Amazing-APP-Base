@@ -112,30 +112,67 @@ void main() {
   });
 
   group('反馈', () {
-    testWidgets('成功与失败用不同图标和语义标签', (tester) async {
+    testWidgets('级别决定图标', (tester) async {
       await pumpShell(
         tester,
         const Column(
           children: [
-            AppSnackbar(message: '保存好了', isSuccess: true),
-            AppSnackbar(message: '失败了', isSuccess: false),
+            AppNotice(message: '提示一下', severity: NoticeSeverity.info),
+            AppNotice(message: '保存好了', severity: NoticeSeverity.success),
+            AppNotice(message: '注意', severity: NoticeSeverity.warning),
+            AppNotice(message: '失败了', severity: NoticeSeverity.error),
           ],
         ),
       );
       await tester.pumpAndSettle();
 
+      expect(find.byIcon(Icons.info), findsOneWidget);
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
+      expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
       expect(find.byIcon(Icons.error), findsOneWidget);
       expect(find.text('保存好了'), findsOneWidget);
-      expect(find.text('失败了'), findsOneWidget);
     });
 
-    testWidgets('showAppSnackbar 能弹出来', (tester) async {
+    testWidgets('内联走级别容器色，浮动走 inverseSurface', (tester) async {
+      await pumpShell(
+        tester,
+        const Column(
+          children: [
+            AppNotice(message: '失败了', severity: NoticeSeverity.error),
+            AppNotice(
+              message: '浮动那条',
+              severity: NoticeSeverity.error,
+              floating: true,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final scheme =
+          KitTheme.of(tester.element(find.byType(AppNotice).first)).colorScheme;
+      Color backgroundOf(int index) {
+        final container = tester.widget<Container>(
+          find
+              .descendant(
+                of: find.byType(AppNotice).at(index),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+        return (container.decoration! as BoxDecoration).color!;
+      }
+
+      expect(backgroundOf(0), scheme.errorContainer);
+      expect(backgroundOf(1), scheme.inverseSurface);
+    });
+
+    testWidgets('showAppNotice 能弹出来', (tester) async {
       await pumpShell(
         tester,
         Builder(
           builder: (context) => TextButton(
-            onPressed: () => showAppSnackbar(context, message: '已保存'),
+            onPressed: () => showAppNotice(context, message: '已保存'),
             child: const Text('触发'),
           ),
         ),
@@ -713,7 +750,7 @@ void main() {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               EmptyStates.goals(),
-              const AppSnackbar(message: '成功', isSuccess: true),
+              const AppNotice(message: '成功', severity: NoticeSeverity.success),
               const SizedBox(height: 8),
               const LinearProgressBar(progress: 0.5),
               const SizedBox(height: 8),

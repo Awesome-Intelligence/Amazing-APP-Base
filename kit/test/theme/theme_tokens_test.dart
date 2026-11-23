@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' show Color;
 
 import 'package:material_ui/material_ui.dart' show FontWeight;
@@ -5,9 +6,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kit/kit.dart';
 import 'package:kit/kit_ui.dart';
 
+/// WCAG 相对亮度。
+double _luminance(Color c) {
+  double channel(double v) =>
+      v <= 0.03928 ? v / 12.92 : math.pow((v + 0.055) / 1.055, 2.4).toDouble();
+  return 0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
+}
+
+/// WCAG 对比度。
+double _contrast(Color a, Color b) {
+  final la = _luminance(a);
+  final lb = _luminance(b);
+  final hi = la > lb ? la : lb;
+  final lo = la > lb ? lb : la;
+  return (hi + 0.05) / (lo + 0.05);
+}
+
 /// 主题迁移的**等价性**验证。
 ///
-/// 这些断言对着 KMP 的 Kotlin 源文件写死期望值 —— 如果哪天有人手改了色板，
+/// 这些断言对着色板源文件写死期望值 —— 如果哪天有人手改了色板，
 /// 这里会立刻红，而不是等上线发现「颜色淡了一点」。
 void main() {
   group('五套预设 tokens', () {
@@ -24,7 +41,7 @@ void main() {
       }
     });
 
-    test('色值与 KMP 逐项一致（抽查各风格）', () {
+    test('色值逐项一致（抽查各风格）', () {
       // Mono.primaryLight
       expect(monoThemeTokens(false).colorScheme.primary, const Color(0xFF1D1915));
       // Mono.surface 与 background 在 Mono 里同值
@@ -34,7 +51,7 @@ void main() {
       expect(eInkThemeTokens(false).colorScheme.surface, const Color(0xFFF5F3EA));
     });
 
-    test('圆角风格与 KMP 一致', () {
+    test('圆角风格一致', () {
       expect(monoThemeTokens(false).cornerStyle, CornerStyle.rounded);
       expect(swissThemeTokens(false).cornerStyle, CornerStyle.square);
       expect(eInkThemeTokens(false).cornerStyle, CornerStyle.square);
@@ -57,7 +74,7 @@ void main() {
     });
 
     test('surfaceVariant 与 surfaceContainerHighest 不被抹平', () {
-      // KMP 里这两项取值不同（EEEE vs E5E1DD），迁到 Flutter 后仍要能分别取到
+      // 这两项取值不同（EEEE vs E5E1DD），必须能分别取到
       final tokens = monoThemeTokens(false);
       expect(tokens.extras.surfaceVariant, const Color(0xFFE9E5E1));
       expect(tokens.colorScheme.surfaceContainerHighest, const Color(0xFFE5E1DD));
@@ -71,16 +88,43 @@ void main() {
       expect(notion.extras.background, isNot(notion.colorScheme.surface));
     });
 
-    test('排版：Compose 绝对行高换算成 Flutter 倍数', () {
-      // Type.kt: bodyLarge fontSize 16 / lineHeight 24 -> height 1.5
+    test('排版：绝对行高已换算成 Flutter 倍数', () {
+      // typography_tokens.dart: bodyLarge fontSize 16 / lineHeight 24 -> height 1.5
       final body = monoThemeTokens(false).textTheme.bodyLarge!;
       expect(body.fontSize, 16);
       expect(body.height, closeTo(1.5, 0.0001));
-      // TypeSwiss.kt: displayLarge 88 / 86 -> 0.9773
+      // typography_tokens.dart: displayLarge 88 / 86 -> 0.9773
       final swissDisplay = swissThemeTokens(false).textTheme.displayLarge!;
       expect(swissDisplay.fontSize, 88);
       expect(swissDisplay.height, closeTo(86 / 88, 0.0001));
       expect(swissDisplay.fontWeight, FontWeight.w700);
+    });
+  });
+
+  group('提示条对比度', () {
+    test('各级别容器上的文字 ≥4.5:1（10 套明暗全查）', () {
+      for (final style in ThemeStyle.values) {
+        for (final dark in [false, true]) {
+          final t = tokensFor(style, dark);
+          final s = t.colorScheme;
+          final e = t.extendedColors;
+          final cases = <String, (Color, Color)>{
+            'info': (s.secondaryContainer, s.onSecondaryContainer),
+            'success': (e.successContainer, e.onSuccessContainer),
+            'warning': (e.warningContainer, e.onWarningContainer),
+            'error': (s.errorContainer, s.onErrorContainer),
+            // 浮动形态（M3 SnackBar）走 inverseSurface。
+            'floating': (s.inverseSurface, s.onInverseSurface),
+          };
+          cases.forEach((name, pair) {
+            expect(
+              _contrast(pair.$1, pair.$2),
+              greaterThanOrEqualTo(4.5),
+              reason: '$style 深浅=$dark $name',
+            );
+          });
+        }
+      }
     });
   });
 
@@ -96,7 +140,7 @@ void main() {
       expect(tokens.tagColor('nope'), tokens.tagColors['neutral']);
     });
 
-    test('Swiss 标签色板与 KMP 一致（含别名 Swiss.redInk）', () {
+    test('Swiss 标签色板一致（含别名 Swiss.redInk）', () {
       final swing = swissThemeTokens(false);
       expect(swing.tagColors['neutral'], const Color(0xFF000000));
       expect(swing.tagColors['rose'], Swiss.redInk);

@@ -2,45 +2,104 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../i18n/kit_strings.dart';
 import '../../theme/kit_theme.dart';
+import '../../theme/theme_tokens.dart';
 
-/// 操作反馈条：图标 + 一句话。
+/// 提示条的语义级别。
+enum NoticeSeverity { info, success, warning, error }
+
+/// 语义级别 → 配色 / 图标。
+///
+/// 内联形态用「容器色 + 容器上的前景色」这一对 —— 和 M3 的
+/// `errorContainer` / `onErrorContainer` 同一个套路。成功/警告在 ColorScheme
+/// 里没有角色，走扩展色。
+extension NoticeSeverityStyle on NoticeSeverity {
+  /// 容器底色。
+  Color background(ThemeTokens tokens) => switch (this) {
+        NoticeSeverity.info => tokens.colorScheme.secondaryContainer,
+        NoticeSeverity.success => tokens.extendedColors.successContainer,
+        NoticeSeverity.warning => tokens.extendedColors.warningContainer,
+        NoticeSeverity.error => tokens.colorScheme.errorContainer,
+      };
+
+  /// 容器上的前景色（文字 + 图标）。
+  Color foreground(ThemeTokens tokens) => switch (this) {
+        NoticeSeverity.info => tokens.colorScheme.onSecondaryContainer,
+        NoticeSeverity.success => tokens.extendedColors.onSuccessContainer,
+        NoticeSeverity.warning => tokens.extendedColors.onWarningContainer,
+        NoticeSeverity.error => tokens.colorScheme.onErrorContainer,
+      };
+
+  /// 级别图标。
+  ///
+  /// 灰度主题（E-Ink）里颜色分不出语义，级别全靠这个图标区分。
+  IconData get icon => switch (this) {
+        NoticeSeverity.info => Icons.info,
+        NoticeSeverity.success => Icons.check_circle,
+        NoticeSeverity.warning => Icons.warning_amber_rounded,
+        NoticeSeverity.error => Icons.error,
+      };
+
+  /// 读屏用的级别名。
+  String label(KitStrings strings) => switch (this) {
+        NoticeSeverity.info => strings.noticeInfo,
+        NoticeSeverity.success => strings.noticeSuccess,
+        NoticeSeverity.warning => strings.noticeWarning,
+        NoticeSeverity.error => strings.noticeError,
+      };
+}
+
+/// 提示条 —— 图标 + 一句话。项目里唯一的「提示条」组件。
+///
+/// 两种形态：
+/// - **内联**（默认）：直接插在页面里（列表项下方、聊天气泡下面）。
+///   底色跟语义走（成功 = successContainer、失败 = errorContainer…），
+///   文字和图标用对应的 on*Container 色，保证 ≥4.5:1。
+/// - **浮动**（[floating] = true）：M3 SnackBar 的样子 —— `inverseSurface` 底 +
+///   `onInverseSurface` 字。级别这时只靠图标区分（M3 的 SnackBar 就是单色的）。
 ///
 /// 这是**纯 widget**，不是 Flutter 的 `SnackBar` —— 后者必须挂在 Scaffold 上、
-/// 由 ScaffoldMessenger 驱动。这里做成普通 widget，是为了能像 Compose 版那样
-/// 直接插在任意位置（底部表单、卡片里、甚至 gallery 里）。
+/// 由 ScaffoldMessenger 驱动。这里做成普通 widget，是为了能直接插在任意位置。
 ///
-/// 想在页面顶部/底部弹一条，用 [showAppSnackbar]。
-class AppSnackbar extends StatelessWidget {
-  const AppSnackbar({
+/// 想让它自己弹出来，用 [showAppNotice]。
+class AppNotice extends StatelessWidget {
+  const AppNotice({
     super.key,
     required this.message,
-    required this.isSuccess,
+    this.severity = NoticeSeverity.info,
+    this.floating = false,
   });
 
   final String message;
-  final bool isSuccess;
+
+  /// 语义级别。
+  final NoticeSeverity severity;
+
+  /// 走浮动（SnackBar）配色，而不是内联容器配色。
+  final bool floating;
 
   @override
   Widget build(BuildContext context) {
     final tokens = KitTheme.of(context);
-    final s = KitStringsScope.of(context);
-    final fg = tokens.colorScheme.onInverseSurface;
+    final strings = KitStringsScope.of(context);
+    final scheme = tokens.colorScheme;
+    final bg = floating ? scheme.inverseSurface : severity.background(tokens);
+    final fg = floating ? scheme.onInverseSurface : severity.foreground(tokens);
 
     return Semantics(
       liveRegion: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: tokens.colorScheme.inverseSurface,
+          color: bg,
           borderRadius: tokens.shapes.small,
         ),
         child: Row(
           children: [
             Icon(
-              isSuccess ? Icons.check_circle : Icons.error,
+              severity.icon,
               size: 20,
-              color: isSuccess ? tokens.colorScheme.primary : tokens.colorScheme.error,
-              semanticLabel: isSuccess ? s.operationSuccess : s.operationFailed,
+              color: fg,
+              semanticLabel: severity.label(strings),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -56,13 +115,13 @@ class AppSnackbar extends StatelessWidget {
   }
 }
 
-/// 弹一条反馈（走 ScaffoldMessenger，3 秒自动消失）。
+/// 弹一条提示条（走 ScaffoldMessenger，3 秒自动消失）。
 ///
-/// 和 [AppSnackbar] 的关系：这个负责「弹」，那个负责「长什么样」。
-void showAppSnackbar(
+/// 和 [AppNotice] 的关系：这个负责「弹」，那个负责「长什么样」。
+void showAppNotice(
   BuildContext context, {
   required String message,
-  bool isSuccess = true,
+  NoticeSeverity severity = NoticeSeverity.info,
 }) {
   final messenger = ScaffoldMessenger.maybeOf(context);
   if (messenger == null) return;
@@ -70,7 +129,11 @@ void showAppSnackbar(
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        content: AppSnackbar(message: message, isSuccess: isSuccess),
+        content: AppNotice(
+          message: message,
+          severity: severity,
+          floating: true,
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         behavior: SnackBarBehavior.floating,

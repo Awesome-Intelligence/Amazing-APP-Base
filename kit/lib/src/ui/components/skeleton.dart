@@ -18,7 +18,7 @@ class _PulseBox extends StatefulWidget {
     this.borderRadius,
   });
 
-  /// null = 撑满可用宽度（等价 Compose 的 `fillMaxWidth`）。
+  /// null = 撑满可用宽度。
   final double? width;
   final double height;
   final BorderRadius? borderRadius;
@@ -242,7 +242,7 @@ class _ChipRowSkeleton extends StatelessWidget {
 
 /// 列表页骨架：搜索框 + 筛选行 + N 张卡片。
 ///
-/// 对应 KMP 的 `GoalListSkeleton`。改名叫通用的，因为底座不该假定业务是「目标」。
+/// 改名叫通用的，因为底座不该假定业务是「目标」。
 class SkeletonListScreen extends StatelessWidget {
   const SkeletonListScreen({super.key, this.itemCount = 6});
 
@@ -272,7 +272,7 @@ class SkeletonListScreen extends StatelessWidget {
 
 /// 带头像的列表骨架：搜索框 + 筛选行 + 头像行。
 ///
-/// 对应 KMP 的 `ContactListSkeleton`。
+
 class SkeletonAvatarList extends StatelessWidget {
   const SkeletonAvatarList({super.key, this.itemCount = 8});
 
@@ -298,7 +298,7 @@ class SkeletonAvatarList extends StatelessWidget {
 
 /// 文本卡片列表骨架：日期标题 + 筛选行 + 多行文本卡。
 ///
-/// 对应 KMP 的 `RecordListSkeleton`。
+
 class SkeletonTextCardList extends StatelessWidget {
   const SkeletonTextCardList({super.key, this.itemCount = 5});
 
@@ -336,7 +336,7 @@ class SkeletonTextCardList extends StatelessWidget {
 
 /// 详情页骨架：大图 + 说明卡 + 标签卡 + 子项卡。
 ///
-/// 对应 KMP 的 `GoalDetailSkeleton`。
+
 class SkeletonDetailScreen extends StatelessWidget {
   const SkeletonDetailScreen({super.key, this.childItemCount = 3});
 

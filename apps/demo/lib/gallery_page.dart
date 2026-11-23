@@ -36,9 +36,16 @@ const _demoPlanOptions = [
 /// 哪块没跟上主题（比如某处写死了圆角、某处用了硬编码颜色）。
 ///
 class GalleryPage extends StatefulWidget {
-  const GalleryPage({super.key, required this.onOpenSettings});
+  const GalleryPage({
+    super.key,
+    required this.onOpenSettings,
+    required this.unreadCount,
+  });
 
   final VoidCallback onOpenSettings;
+
+  /// 真实的未读通知数 —— 目录页里的角标不写死，跟底栏那个是同一个数。
+  final int unreadCount;
 
   @override
   State<GalleryPage> createState() => _GalleryPageState();
@@ -214,7 +221,7 @@ class _GalleryPageState extends State<GalleryPage> {
                         value: _composer,
                         onValueChange: (v) => setState(() => _composer = v),
                         placeholder: '对话输入条',
-                        onMicTap: () => _toast('语音输入未接入'),
+                        onMicTap: () => _toast('语音输入未接入', NoticeSeverity.warning),
                         micContentDescription: '语音输入',
                         onSubmit: () => _toast('发送：$_composer'),
                       ),
@@ -319,9 +326,25 @@ class _GalleryPageState extends State<GalleryPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const AppSnackbar(message: '保存成功', isSuccess: true),
+                      const AppNotice(
+                        message: '保存成功',
+                        severity: NoticeSeverity.success,
+                      ),
                       const SizedBox(height: 8),
-                      const AppSnackbar(message: '保存失败', isSuccess: false),
+                      const AppNotice(
+                        message: '保存失败',
+                        severity: NoticeSeverity.error,
+                      ),
+                      const SizedBox(height: 8),
+                      const AppNotice(
+                        message: '网络不稳，稍后重试',
+                        severity: NoticeSeverity.warning,
+                      ),
+                      const SizedBox(height: 8),
+                      const AppNotice(
+                        message: '已切换到离线模式',
+                        severity: NoticeSeverity.info,
+                      ),
                       const SizedBox(height: 16),
                       LinearProgressBar(progress: _progress),
                       const SizedBox(height: 8),
@@ -374,7 +397,7 @@ class _GalleryPageState extends State<GalleryPage> {
                                 setState(() => _loading = true);
                                 Future<void>.delayed(const Duration(milliseconds: 800), () {
                                   if (mounted) setState(() => _loading = false);
-                                  _toast('加载完成');
+                                  _toast('加载完成', NoticeSeverity.success);
                                 });
                               },
                             ),
@@ -496,8 +519,8 @@ class _GalleryPageState extends State<GalleryPage> {
                   child: Column(
                     children: [
                       AppBottomNavigation(
-                        items: const [
-                          BottomNavItem(
+                        items: [
+                          const BottomNavItem(
                             label: '首页',
                             icon: Icons.home_outlined,
                             selectedIcon: Icons.home,
@@ -506,10 +529,10 @@ class _GalleryPageState extends State<GalleryPage> {
                             label: '消息',
                             icon: Icons.mail_outline,
                             selectedIcon: Icons.mail,
-                            badgeCount: 3,
+                            badgeCount: widget.unreadCount,
                           ),
-                          BottomNavItem(label: '新建', icon: Icons.add, alwaysFilled: true),
-                          BottomNavItem(
+                          const BottomNavItem(label: '新建', icon: Icons.add, alwaysFilled: true),
+                          const BottomNavItem(
                             label: '我的',
                             icon: Icons.person_outline,
                             selectedIcon: Icons.person,
@@ -662,8 +685,9 @@ class _GalleryPageState extends State<GalleryPage> {
     );
   }
 
-  /// 用 kit 自己的反馈条，顺带验证它在真实页面里能用。
-  void _toast(String text) => showAppSnackbar(context, message: text);
+  /// 用 kit 自己的提示条，顺带验证它在真实页面里能用。
+  void _toast(String text, [NoticeSeverity severity = NoticeSeverity.info]) =>
+      showAppNotice(context, message: text, severity: severity);
 }
 
 /// 目录里的一个分组：标题 + 一张卡。

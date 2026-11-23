@@ -1,6 +1,6 @@
 /// kit —— Flutter 版通用层的**纯 Dart 数据层**。
 ///
-/// 对应 KMP 的 `kit/` 里 `data/` 那部分：存储抽象、编解码、设置、跨端契约。
+/// 存储抽象、编解码、设置、跨端契约。
 /// 这一层不依赖 Flutter，小程序端 / CLI / 契约校验都能直接用。
 ///
 /// UI 层（主题 + 组件 + 文案）在 `package:kit/kit_ui.dart`。
@@ -13,6 +13,7 @@
 /// - 设置：`AppSettings` / `SettingsStore` / `AppLanguage` / `ThemeStyle` / `AppearanceMode`
 /// - 跨端契约：`ActionContract` / `runActionSamples`
 /// - 日期格式化：`KitDateFormat`（纯 Dart，不依赖 intl）
+/// - 通知：`AppNotification` / `NotificationStore`
 /// - 版本检查：`AppVersion` / `UpdateChecker` / `UpdateManifest` /
 ///   `HttpUpdateSource` / `GitHubReleaseSource` / `MemoryUpdateStateStore`
 ///
@@ -36,7 +37,12 @@ export 'src/contract/action_contract.dart';
 
 export 'src/format/kit_date_format.dart';
 
-// 版本检查（对应 KMP 的 data/update）。
+// 通知（站内消息）。只有数据层：推送渠道是平台能力，归 app 层。
+export 'src/notification/notification.dart';
+// ntfy 推送客户端（纯 HTTP，不碰平台 API）。
+export 'src/notification/ntfy_client.dart';
+
+// 版本检查。
 // 这一层同样平台无关：HTTP 客户端由 App 注入，落盘实现按平台选。
 export 'src/update/app_version.dart';
 export 'src/update/update_manifest.dart';

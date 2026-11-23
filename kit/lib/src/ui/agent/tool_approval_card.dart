@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../components/buttons.dart';
+import '../components/feedback.dart';
 import '../../i18n/kit_strings.dart';
 import '../../theme/kit_theme.dart';
 
@@ -44,13 +45,15 @@ class ToolApprovalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = KitTheme.of(context);
     final strings = KitStringsScope.of(context);
-    final fg = tokens.colorScheme.onErrorContainer;
+    // 配色跟提示条走同一套映射 —— 这张卡是「等你确认」，不是「出错了」。
+    const severity = NoticeSeverity.warning;
+    final fg = severity.foreground(tokens);
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: tokens.colorScheme.errorContainer,
+        color: severity.background(tokens),
         borderRadius: tokens.shapes.medium,
       ),
       child: Column(
@@ -58,7 +61,7 @@ class ToolApprovalCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.warning_amber_rounded, size: 20, color: fg),
+              Icon(severity.icon, size: 20, color: fg),
               const SizedBox(width: 8),
               Text(
                 title ?? strings.chatApprovalTitle,

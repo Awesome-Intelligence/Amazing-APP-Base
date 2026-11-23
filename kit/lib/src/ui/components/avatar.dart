@@ -7,8 +7,8 @@ import '../../theme/theme_tokens.dart';
 /// 用户头像圆 —— 有图显示图，没有就退回首字母。
 ///
 /// 「我」相关页面（我的资料 / 我的 / 抽屉头部）共用同一套渲染。
-/// 对应 KMP 的 `UserAvatar`（那边用 coil 的 AsyncImage，这边用 [Image.network]，
-/// 加载失败同样退回字母 —— 头像 URL 过期是很常见的情况，不能让整块空白）。
+/// 用 [Image.network] 加载，加载失败退回字母 —— 头像 URL 过期是很常见的情况，
+/// 不能让整块空白。
 class UserAvatar extends StatelessWidget {
   const UserAvatar({
     super.key,
@@ -90,7 +90,7 @@ class ContactItem {
 ///
 /// 点击整块也会在两种形态间切换 —— 但只有超量时才可点，否则点了个寂寞。
 ///
-/// 对应 KMP 的 `AvatarStack`。
+
 class AvatarStack extends StatefulWidget {
   const AvatarStack({
     super.key,

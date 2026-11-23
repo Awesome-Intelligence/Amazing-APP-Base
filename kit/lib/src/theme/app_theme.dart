@@ -7,7 +7,7 @@ import 'theme_tokens.dart';
 /// 把 [ThemeTokens] 落成 Material 的 [ThemeData]。
 ///
 /// 关键点：页面底色取 [ColorSchemeExtras.background] 而不是 `colorScheme.surface` ——
-/// KMP 里这两项是**分开取值**的（Notion 浅色底 `#f7f6f3`，卡片白 `#ffffff`），
+/// 这两项**分开取值**（Notion 浅色底 `#f7f6f3`，卡片白 `#ffffff`），
 /// 统一成 surface 会让整页发白发平。
 ThemeData kitThemeData(ThemeTokens tokens) {
   final base = ThemeData(
@@ -18,7 +18,7 @@ ThemeData kitThemeData(ThemeTokens tokens) {
   return base.copyWith(
     textTheme: tokens.textTheme,
     canvasColor: tokens.extras.background,
-    // 分屏/对话框底：M3 用 surfaceContainerHigh，KMP 一致
+    // 分屏/对话框底：M3 用 surfaceContainerHigh
     dialogTheme: DialogThemeData(
       backgroundColor: tokens.colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(borderRadius: tokens.shapes.extraLarge),
@@ -84,10 +84,13 @@ class AppTheme extends StatelessWidget {
 /// ```dart
 /// void main() => runApp(const KitApp(title: '待办', home: TodoChatPage()));
 /// ```
+///
+/// app 自己带路由（go_router 等）时给 [routerConfig] 代替 [home]。
 class KitApp extends StatelessWidget {
   const KitApp({
     super.key,
-    required this.home,
+    this.home,
+    this.routerConfig,
     this.title = '',
     this.style = ThemeStyle.mono,
     this.darkTheme,
@@ -95,9 +98,17 @@ class KitApp extends StatelessWidget {
     this.reducedMotion = false,
     this.debugShowCheckedModeBanner = false,
     this.themeMode,
-  });
+  }) : assert(
+         home != null || routerConfig != null,
+         '要么给 home，要么给 routerConfig —— 两个都没有的话没东西可显示',
+       );
 
-  final Widget home;
+  /// 首屏。给了 [routerConfig] 就用不上。
+  final Widget? home;
+
+  /// app 自带的路由（go_router 之类）。给了就走 `MaterialApp.router`。
+  final RouterConfig<Object>? routerConfig;
+
   final String title;
 
   /// 主题风格（品牌主题请改用 [tokens]）。
@@ -125,6 +136,16 @@ class KitApp extends StatelessWidget {
       child: Builder(
         builder: (context) {
           final resolved = KitTheme.of(context);
+          final router = routerConfig;
+          if (router != null) {
+            return MaterialApp.router(
+              title: title,
+              debugShowCheckedModeBanner: debugShowCheckedModeBanner,
+              theme: kitThemeData(resolved),
+              themeMode: themeMode,
+              routerConfig: router,
+            );
+          }
           return MaterialApp(
             title: title,
             debugShowCheckedModeBanner: debugShowCheckedModeBanner,

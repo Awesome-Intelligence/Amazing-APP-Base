@@ -1,22 +1,14 @@
-import 'package:demo/home_shell.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kit/kit.dart' show AppLanguage, AppSettings;
 import 'package:kit/kit_ui.dart';
+
+import 'support.dart';
 
 /// 付费流程的端到端验证：页头「升级」→ 升级面板 → 买一单 → 档位和额度真的变。
 ///
 /// 走的是真实路径（真实 `MembershipManager` + 假商店 `DemoBilling`），
 /// 只把「平台支付通道」换成假的 —— 这和真机的差别只在网络那一段。
 void main() {
-  Future<void> pumpShell(WidgetTester tester) {
-    const settings = AppSettings(language: AppLanguage.chinese);
-    return tester.pumpWidget(
-      KitAppShell(
-        settings: settings,
-        home: HomeShell(settings: settings, onSettingsChange: (_) {}),
-      ),
-    );
-  }
+  Future<void> pumpShell(WidgetTester tester) => pumpDemoApp(tester);
 
   /// 假商店有两处 `Future.delayed(300ms)`，pump 到足够长再 settle。
   Future<void> settlePurchase(WidgetTester tester) async {

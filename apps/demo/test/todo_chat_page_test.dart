@@ -1,11 +1,13 @@
+import 'package:demo/demo_store.dart';
 import 'package:demo/gallery_page.dart';
-import 'package:demo/home_shell.dart';
 import 'package:demo/main.dart';
 import 'package:demo/todo_chat_page.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kit/kit.dart' show AppLanguage, AppSettings, ThemeStyle;
 import 'package:kit/kit_ui.dart';
+
+import 'support.dart';
 
 /// demo 页面级验证：不连模型，只看「页面能不能起来、主题能不能切」。
 ///
@@ -14,27 +16,10 @@ import 'package:kit/kit_ui.dart';
 void main() {
   /// 用固定中文的 shell 起页面：`AppLanguage.system` 会跟测试环境 locale 走
   /// （flutter test 默认 en），不固定的话断言的文案会随环境变。
-  Future<void> pumpShell(
+  Future<DemoStore> pumpShell(
     WidgetTester tester, {
     AppSettings settings = const AppSettings(language: AppLanguage.chinese),
-    void Function(AppSettings)? onChanged,
-  }) {
-    var current = settings;
-    return tester.pumpWidget(
-      StatefulBuilder(
-        builder: (context, setState) => KitAppShell(
-          settings: current,
-          home: HomeShell(
-            settings: current,
-            onSettingsChange: (next) {
-              setState(() => current = next);
-              onChanged?.call(next);
-            },
-          ),
-        ),
-      ),
-    );
-  }
+  }) => pumpDemoApp(tester, settings: settings);
 
   testWidgets('demo 首屏渲染：标题 / 档位 / 输入区都在', (tester) async {
     await tester.pumpWidget(const DemoApp());
@@ -48,8 +33,11 @@ void main() {
   });
 
   testWidgets('五套主题风格都能渲染且不抛异常', (tester) async {
+    // 换主题 = 改 store 里的设置（app 根监听着），不是重起一个 app：
+    // 重起会造第二个 DemoApp，Flutter 复用同一个 State，注入的 store 就丢了。
+    final store = await pumpShell(tester);
     for (final style in ThemeStyle.values) {
-      await pumpShell(tester, settings: AppSettings(themeStyle: style));
+      store.updateSettings(AppSettings(themeStyle: style));
       await tester.pumpAndSettle();
 
       expect(
@@ -63,8 +51,7 @@ void main() {
   });
 
   testWidgets('从设置页切主题：Mono 圆角 → Swiss 直角，返回后仍然生效', (tester) async {
-    AppSettings? last;
-    await pumpShell(tester, onChanged: (s) => last = s);
+    final store = await pumpShell(tester);
     await tester.pumpAndSettle();
 
     ThemeTokens tokensNow() =>
@@ -83,7 +70,7 @@ void main() {
     await tester.tap(find.text('确认'));
     await tester.pumpAndSettle();
 
-    expect(last?.themeStyle, ThemeStyle.swiss);
+    expect(store.settings.themeStyle, ThemeStyle.swiss);
 
     // 返回列表页，风格仍然生效（状态在根上，不是设置页自己的）
     await tester.tap(find.byIcon(Icons.arrow_back));
