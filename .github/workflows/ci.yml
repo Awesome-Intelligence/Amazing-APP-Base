@@ -27,7 +27,7 @@ jobs:
         with:
           # 子模块（skills/ 下的两个上游镜像）必须初始化 —— verify 那道门禁要检查目录非空
           submodules: true
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - uses: actions/setup-node@v5
