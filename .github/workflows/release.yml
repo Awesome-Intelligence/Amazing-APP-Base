@@ -101,7 +101,7 @@ jobs:
                "apps/demo/build/app/outputs/flutter-apk/Android-Kit-$VERSION_NAME.apk"
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-apk
           path: apps/demo/build/app/outputs/flutter-apk/Android-Kit-*.apk
@@ -132,7 +132,7 @@ jobs:
       - run: bash scripts/ci.sh bootstrap
       - name: Build web
         run: cd apps/demo && flutter build web --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: demo-web
           path: apps/demo/build/web
@@ -157,7 +157,7 @@ jobs:
         run: |
           cd apps/demo/build/linux/x64/release
           tar czf "$GITHUB_WORKSPACE/demo-linux-x64.tar.gz" bundle
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: demo-linux
           path: demo-linux-x64.tar.gz
@@ -180,7 +180,7 @@ jobs:
         run: |
           cd apps/demo/build/macos/Build/Products/Release
           ditto -c -k --sequesterRsrc --keepParent demo.app "$GITHUB_WORKSPACE/demo-macos.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: demo-macos
           path: demo-macos.zip
@@ -201,7 +201,7 @@ jobs:
       # 在 fork 自己的 workflow 里配 —— 这里的产物只证明 iOS 目标编得过。
       - name: Build iOS (no codesign)
         run: cd apps/demo && flutter build ios --release --no-codesign
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ios-build
           path: apps/demo/build/ios/iphoneos/Runner.app
