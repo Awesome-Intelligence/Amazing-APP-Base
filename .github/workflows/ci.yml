@@ -23,7 +23,7 @@ jobs:
     name: Verify (scripts)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # 子模块（skills/ 下的两个上游镜像）必须初始化 —— verify 那道门禁要检查目录非空
           submodules: true
@@ -44,7 +44,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -59,7 +59,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     # agent 网关（backend/）：tsc --noEmit + 冒烟检查。冒烟不花钱、不连网。
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
@@ -91,7 +91,7 @@ jobs:
     name: Build (web + android)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
