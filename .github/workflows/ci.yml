@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       # verify / contract 这两道不依赖 Flutter SDK —— 单独一个 job，
@@ -76,7 +76,7 @@ jobs:
     # agent 网关（backend/）：tsc --noEmit + 冒烟检查。冒烟不花钱、不连网。
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
