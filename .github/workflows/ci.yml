@@ -106,13 +106,13 @@ jobs:
       - name: Build
         run: bash scripts/ci.sh build
       - name: Upload web build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: demo-web
           path: apps/demo/build/web
           retention-days: 7
       - name: Upload debug apk
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: demo-apk
           path: apps/demo/build/app/outputs/flutter-apk/app-debug.apk
